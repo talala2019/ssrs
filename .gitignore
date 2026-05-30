@@ -1,0 +1,21 @@
+# Visual Studio / SSDT
+.vs/
+*.user
+*.suo
+*.sln.docstates
+
+# SSIS build output
+bin/
+obj/
+
+# SSRS deployment artifacts
+*.rptproj.user
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Temp files
+*.tmp
+*.bak
+*.log

@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RptDataSource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="DataSource_InMemoryOLTP_KGI_DB">
+  <ConnectionProperties>
+    <Extension>SQL</Extension>
+    <ConnectString>Data Source=localhost;Initial Catalog=InMemoryOLTP_KGI_DB</ConnectString>
+  </ConnectionProperties>
+  <DataSourceID>dbba3e9c-3e17-4738-aa41-c901e0eda731</DataSourceID>
+</RptDataSource>

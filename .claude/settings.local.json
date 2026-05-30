@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(git config --global user.name)",
+      "PowerShell(git config --global user.email)",
+      "PowerShell(git config --global --list)",
+      "PowerShell(winget install --id Git.Git -e --source winget --accept-package-agreements --accept-source-agreements)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); git --version)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); git config --global user.name \"tully\"; git config --global user.email \"tully168899@gmail.com\"; git config --global core.autocrlf true; echo \"Git config done\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"$env:USERPROFILE\\\\.ssh\"; ssh-keygen -t ed25519 -C \"tully168899@gmail.com\" -f \"$env:USERPROFILE\\\\.ssh\\\\id_ed25519\" -N \"\"; Get-Content \"$env:USERPROFILE\\\\.ssh\\\\id_ed25519.pub\")",
+      "PowerShell($sshDir = \"$env:USERPROFILE\\\\.ssh\"; $keyFile = \"$sshDir\\\\id_ed25519\"; & ssh-keygen -t ed25519 -C \"tully168899@gmail.com\" -f $keyFile -q -N ''; Get-Content \"$keyFile.pub\")",
+      "PowerShell($keyFile = \"$env:USERPROFILE\\\\.ssh\\\\id_ed25519\"; ssh-keygen --% -t ed25519 -C \"tully168899@gmail.com\" -f \"C:\\\\Users\\\\tully\\\\.ssh\\\\id_ed25519\" -N \"\"; if \\(Test-Path \"$keyFile.pub\"\\) { Get-Content \"$keyFile.pub\" })",
+      "PowerShell(cmd /c \"ssh-keygen -t ed25519 -C tully168899@gmail.com -f C:\\\\Users\\\\tully\\\\.ssh\\\\id_ed25519 -N \"\"\")",
+      "PowerShell(Get-Content \"$env:USERPROFILE\\\\.ssh\\\\id_ed25519.pub\")",
+      "PowerShell(ssh -T git@github.com 2>&1)",
+      "PowerShell(ssh-keyscan -H github.com >> \"$env:USERPROFILE\\\\.ssh\\\\known_hosts\"; echo \"Host key added\")",
+      "PowerShell($env:PATH = \"C:\\\\Program Files\\\\Git\\\\usr\\\\bin;\" + $env:PATH; $env:GIT_SSH_COMMAND = \"ssh -o StrictHostKeyChecking=accept-new\"; & \"C:\\\\Program Files\\\\Git\\\\usr\\\\bin\\\\ssh.exe\" -T git@github.com)",
+      "PowerShell(& \"C:\\\\Program Files\\\\Git\\\\usr\\\\bin\\\\ssh-keyscan.exe\" -H github.com 2>$null >> \"$env:USERPROFILE\\\\.ssh\\\\known_hosts\"; & \"C:\\\\Program Files\\\\Git\\\\usr\\\\bin\\\\ssh.exe\" -T git@github.com 2>&1)",
+      "PowerShell(Remove-Item \"$env:USERPROFILE\\\\.ssh\\\\known_hosts\" -Force -ErrorAction SilentlyContinue; & \"C:\\\\Program Files\\\\Git\\\\usr\\\\bin\\\\ssh-keyscan.exe\" github.com 2>$null | Out-File \"$env:USERPROFILE\\\\.ssh\\\\known_hosts\" -Encoding utf8; Get-Content \"$env:USERPROFILE\\\\.ssh\\\\known_hosts\")",
+      "PowerShell(& \"C:\\\\Program Files\\\\Git\\\\usr\\\\bin\\\\ssh.exe\" -T git@github.com 2>&1)",
+      "WebFetch(domain:api.github.com)",
+      "PowerShell(gh --version 2>&1)",
+      "PowerShell(winget install --id GitHub.cli -e --source winget --accept-package-agreements --accept-source-agreements)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); gh auth login --hostname github.com --git-protocol ssh --web 2>&1)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); gh repo create ssrs --public --description \"SQL Server Reporting Services / SSIS 台股投資報表系統\" 2>&1)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); cd \"C:\\\\Users\\\\tully\\\\Workspaces\\\\SSRS\"; git init; git remote add origin git@github.com:talala2019/ssrs.git; echo \"done\")",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\", \"User\"\\); cd \"C:\\\\Users\\\\tully\\\\Workspaces\\\\SSRS\"; git add -A; git status)"
+    ]
+  }
+}

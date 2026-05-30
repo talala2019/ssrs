@@ -1,0 +1,2629 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report MustUnderstand="df" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:df="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition/defaultfontfamily">
+  <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="DataSource_localhost">
+      <DataSourceReference>DataSource_localhost</DataSourceReference>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>0c8b0029-2251-4660-b70d-f20c6ab2028e</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="DataSet1">
+      <Query>
+        <DataSourceName>DataSource_localhost</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@InputCode1">
+            <Value>=Parameters!InputCode1.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@InputCode2">
+            <Value>=Parameters!InputCode2.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>WITH RawData AS (
+    SELECT 
+        CASE 
+            WHEN com.Symbol LIKE @InputCode1 + '%' THEN 1 
+            WHEN com.Symbol LIKE @InputCode2 + '%' THEN 2 
+        END AS SortOrder,
+        LEFT(com.Symbol, 4) AS Symbol, 
+        N'( ' + com.ChtName + ' )' AS ChtName, 
+        sdd.PriceDate AS OriginalDate, 
+        FORMAT(sdd.PriceDate, 'MM-dd') AS FormattedDate, 
+        sdd.DayClose,
+        sdd.Close_Chg1,
+		isnull(ds.DisposeStartDate,'1900-01-01') AS DisposeStartDate,
+		isnull(ds.DisposeEndDate,'1900-01-01') AS DisposeEndDate,
+		isnull(ds.MatchType,'n/a') AS MatchType
+    FROM company com 
+    INNER JOIN temp_sdd_for_correlations sdd ON com.CompanyID = sdd.CID
+	left join DisposedStock ds on LEFT(com.Symbol, 4) = ds.StockNo
+    WHERE com.Status = 1 AND (com.Symbol LIKE @InputCode1 + '%' OR com.Symbol LIKE @InputCode2 + '%')
+      AND sdd.PriceDate &gt; GETDATE() - 90
+),
+RatioData AS (
+    SELECT 
+        3 AS SortOrder, N'比值' AS Symbol, '' AS ChtName, 
+        MAX(OriginalDate) AS OriginalDate, FormattedDate, 
+        CAST(SUM(CASE WHEN SortOrder = 1 THEN DayClose END) / 
+              NULLIF(SUM(CASE WHEN SortOrder = 2 THEN DayClose END), 0) AS DECIMAL(10, 2)) AS DayClose,
+        0 AS Close_Chg1,
+		'' AS DisposeStartDate,
+		'' AS DisposeEndDate,
+		'' AS MatchType
+    FROM RawData GROUP BY FormattedDate
+)
+-- 1. 原始股 1 &amp; 股 2 資料
+SELECT * FROM RawData
+
+UNION ALL
+
+-- 2. 比值資料
+SELECT * FROM RatioData
+
+UNION ALL
+
+-- 3. 新增：股票 1 的漲跌幅 (SortOrder 4)
+SELECT 
+    4 AS SortOrder, Symbol, N'漲跌%' AS ChtName, 
+    OriginalDate, FormattedDate, 
+    Round(Close_Chg1,0) AS DayClose, -- 將漲跌幅放入 DayClose 欄位以便 Sparkline 使用
+    0 AS Close_Chg1,
+	'' AS DisposeStartDate,
+	'' AS DisposeEndDate,
+	'' AS MatchType
+FROM RawData WHERE SortOrder = 1
+
+UNION ALL
+
+-- 4. 新增：股票 2 的漲跌幅 (SortOrder 5)
+SELECT 
+    5 AS SortOrder, Symbol, N'漲跌%' AS ChtName,
+    OriginalDate, FormattedDate, 
+    Round(Close_Chg1,0) AS DayClose, -- 同上
+    0 AS Close_Chg1,
+	'' AS DisposeStartDate,
+	'' AS DisposeEndDate,
+	'' AS MatchType
+FROM RawData WHERE SortOrder = 2
+
+UNION ALL
+
+-- 5. 乖離 % (SortOrder 6)
+SELECT 
+    6 AS SortOrder, N'乖離 %' AS Symbol, '' AS ChtName, 
+    OriginalDate, FormattedDate, 
+    Round(((DayClose / AVG(DayClose) OVER()) - 1)*100,1) AS DayClose,
+    0 AS Close_Chg1,
+	'' AS DisposeStartDate,
+	'' AS DisposeEndDate,
+	'' AS MatchType
+FROM RatioData
+
+UNION ALL
+
+-- 6. 基準線 (SortOrder 7)
+SELECT 
+    7 AS SortOrder, 'Baseline' AS Symbol, '' AS ChtName, 
+    OriginalDate, FormattedDate, 
+    0 AS DayClose, 
+    0 AS Close_Chg1,
+	'' AS DisposeStartDate,
+	'' AS DisposeEndDate,
+	'' AS MatchType
+FROM RatioData
+
+ORDER BY SortOrder, OriginalDate DESC;</CommandText>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+      </Query>
+      <Fields>
+        <Field Name="SortOrder">
+          <DataField>SortOrder</DataField>
+          <rd:TypeName>System.Int32</rd:TypeName>
+        </Field>
+        <Field Name="Symbol">
+          <DataField>Symbol</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="ChtName">
+          <DataField>ChtName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="OriginalDate">
+          <DataField>OriginalDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="FormattedDate">
+          <DataField>FormattedDate</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="DayClose">
+          <DataField>DayClose</DataField>
+          <rd:TypeName>System.Double</rd:TypeName>
+        </Field>
+        <Field Name="Close_Chg1">
+          <DataField>Close_Chg1</DataField>
+          <rd:TypeName>System.Double</rd:TypeName>
+        </Field>
+        <Field Name="DisposeStartDate">
+          <DataField>DisposeStartDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="DisposeEndDate">
+          <DataField>DisposeEndDate</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="MatchType">
+          <DataField>MatchType</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DataSet2">
+      <Query>
+        <DataSourceName>DataSource_localhost</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@InputCode1">
+            <Value>=Parameters!InputCode1.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>EXEC dbo.GetTop120Correlations @InputCode1</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="股票代號">
+          <DataField>股票代號</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="股票名稱">
+          <DataField>股票名稱</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="相120">
+          <DataField>相120</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="相20">
+          <DataField>相20</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="相60">
+          <DataField>相60</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="產業">
+          <DataField>產業</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="細產業">
+          <DataField>細產業</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Row_Num">
+          <DataField>Row_Num</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="DataSet3">
+      <Query>
+        <DataSourceName>DataSource_localhost</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@CodeA">
+            <Value>=Parameters!InputCode1.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@CodeB">
+            <Value>=Parameters!InputCode2.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>GetCorrelationBetweenTwo</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="Stock_A">
+          <DataField>Stock_A</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Stock_B">
+          <DataField>Stock_B</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Corr120">
+          <DataField>Corr120</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="Corr20">
+          <DataField>Corr20</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Textbox Name="textbox1">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>股價變化　 </Value>
+                    <Style>
+                      <FontFamily>Segoe UI Light</FontFamily>
+                      <FontSize>22pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>Blue </Value>
+                    <Style>
+                      <FontFamily>Segoe UI Light</FontFamily>
+                      <FontSize>16pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                      <Color>Blue</Color>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value EvaluationMode="Constant">= 20mins 搓合 </Value>
+                    <Style>
+                      <FontFamily>Segoe UI Light</FontFamily>
+                      <FontSize>12pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>Green </Value>
+                    <Style>
+                      <FontFamily>Segoe UI Light</FontFamily>
+                      <FontSize>16pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                      <Color>Green</Color>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value EvaluationMode="Constant">= 5mins 搓合</Value>
+                    <Style>
+                      <FontFamily>Segoe UI Light</FontFamily>
+                      <FontSize>12pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Left</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>textbox1</rd:DefaultName>
+            <Left>0.89746cm</Left>
+            <Height>0.43in</Height>
+            <Width>5.50084in</Width>
+            <Style>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+          <Tablix Name="matrix1">
+            <TablixCorner>
+              <TablixCornerRows>
+                <TablixCornerRow>
+                  <TablixCornerCell>
+                    <CellContents>
+                      <Textbox Name="textbox3">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>股票代碼</Value>
+                                <Style>
+                                  <FontSize>12pt</FontSize>
+                                  <FontWeight>Bold</FontWeight>
+                                  <Color>#333333</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style>
+                              <TextAlign>Center</TextAlign>
+                            </Style>
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>textbox3</rd:DefaultName>
+                        <Style>
+                          <Border>
+                            <Style>Solid</Style>
+                          </Border>
+                          <TopBorder>
+                            <Color>Black</Color>
+                            <Style>Solid</Style>
+                            <Width>1pt</Width>
+                          </TopBorder>
+                          <BottomBorder>
+                            <Color>Black</Color>
+                            <Style>Solid</Style>
+                            <Width>1pt</Width>
+                          </BottomBorder>
+                          <LeftBorder>
+                            <Color>Black</Color>
+                            <Style>Solid</Style>
+                            <Width>1pt</Width>
+                          </LeftBorder>
+                          <RightBorder>
+                            <Color>Black</Color>
+                            <Style>Solid</Style>
+                            <Width>1pt</Width>
+                          </RightBorder>
+                          <VerticalAlign>Middle</VerticalAlign>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixCornerCell>
+                  <TablixCornerCell>
+                    <CellContents>
+                      <Textbox Name="textbox4">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>名稱</Value>
+                                <Style>
+                                  <FontSize>12pt</FontSize>
+                                  <FontWeight>Bold</FontWeight>
+                                  <Color>#333333</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style>
+                              <TextAlign>Center</TextAlign>
+                            </Style>
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>textbox3</rd:DefaultName>
+                        <Style>
+                          <Border>
+                            <Style>Solid</Style>
+                          </Border>
+                          <TopBorder>
+                            <Color>Black</Color>
+                            <Style>Solid</Style>
+                            <Width>1pt</Width>
+                          </TopBorder>
+                          <BottomBorder>
+                            <Color>Black</Color>
+                            <Style>Solid</Style>
+                            <Width>1pt</Width>
+                          </BottomBorder>
+                          <LeftBorder>
+                            <Color>Black</Color>
+                            <Style>Solid</Style>
+                            <Width>1pt</Width>
+                          </LeftBorder>
+                          <RightBorder>
+                            <Color>Black</Color>
+                            <Style>Solid</Style>
+                            <Width>1pt</Width>
+                          </RightBorder>
+                          <VerticalAlign>Middle</VerticalAlign>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixCornerCell>
+                </TablixCornerRow>
+              </TablixCornerRows>
+            </TablixCorner>
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>0.53in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.7in</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>0.35236in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="textbox2">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Format(Fields!DayClose.Value, "#,#.0")</Value>
+                                  <Style>
+                                    <FontWeight>=Switch(
+	Fields!SortOrder.Value = 4, "Bold",
+	Fields!SortOrder.Value = 5, "Bold",
+	Fields!SortOrder.Value = 6, "Bold",
+    True, "Default"
+)</FontWeight>
+                                    <Color>=Switch(
+    Fields!SortOrder.Value = 4 AND Fields!DayClose.Value&gt; 0, "Red",
+	Fields!SortOrder.Value = 4 AND Fields!DayClose.Value&lt; 0, "Green",
+	Fields!SortOrder.Value = 5 AND Fields!DayClose.Value&gt; 0, "Red",
+	Fields!SortOrder.Value = 5 AND Fields!DayClose.Value&lt; 0, "Green",
+    Fields!SortOrder.Value = 6 AND Fields!DayClose.Value&gt; 0, "Red",
+    Fields!SortOrder.Value = 6 AND Fields!DayClose.Value&lt; 0, "Green",
+	Fields!SortOrder.Value = 7, "White",
+    True, "Black"
+)</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>textbox2</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>=Switch(
+    (Fields!SortOrder.Value = 1 OR Fields!SortOrder.Value = 2) AND Fields!OriginalDate.Value&lt;=Fields!DisposeEndDate.Value AND Fields!OriginalDate.Value&gt;=Fields!DisposeStartDate.Value AND Fields!MatchType.Value="20分鐘", "LightBlue",
+	(Fields!SortOrder.Value = 1 OR Fields!SortOrder.Value = 2) AND Fields!OriginalDate.Value&lt;=Fields!DisposeEndDate.Value AND Fields!OriginalDate.Value&gt;=Fields!DisposeStartDate.Value AND Fields!MatchType.Value="5分鐘", "LightGreen",
+	Fields!SortOrder.Value = 4 AND Fields!DayClose.Value&gt; 0, "#FFD9D9",
+	Fields!SortOrder.Value = 4 AND Fields!DayClose.Value&lt; 0, "#E2F0D9",
+	Fields!SortOrder.Value = 5 AND Fields!DayClose.Value&gt; 0, "#FFD9D9",
+	Fields!SortOrder.Value = 5 AND Fields!DayClose.Value&lt; 0, "#E2F0D9",
+    Fields!SortOrder.Value = 6 AND Fields!DayClose.Value&gt;= 3, "#FFD9D9",
+    Fields!SortOrder.Value = 6 AND Fields!DayClose.Value&lt;= -3, "#E2F0D9",
+    True, "Transparent"
+)</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox13">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Avg(Fields!DayClose.Value)</Value>
+                                  <Style>
+                                    <Format>0.00</Format>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox13</rd:DefaultName>
+                          <Visibility>
+                            <Hidden>=IIF(Fields!SortOrder.Value = 3, False, True)</Hidden>
+                          </Visibility>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>=Switch(
+    Fields!SortOrder.Value = 1, "Yellow",
+    Fields!SortOrder.Value = 3, "LightGray",
+    True, "Transparent"
+)</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                      <DataElementOutput>Output</DataElementOutput>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <Group Name="matrix1_FormattedDate">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!FormattedDate.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!OriginalDate.Value</Value>
+                      <Direction>Descending</Direction>
+                    </SortExpression>
+                  </SortExpressions>
+                  <TablixHeader>
+                    <Size>0.35236in</Size>
+                    <CellContents>
+                      <Textbox Name="FormattedDate">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>=Left(Fields!FormattedDate.Value,5) + " 收 "</Value>
+                                <Style />
+                              </TextRun>
+                            </TextRuns>
+                            <Style>
+                              <TextAlign>Center</TextAlign>
+                            </Style>
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>FormattedDate</rd:DefaultName>
+                        <Style>
+                          <Border>
+                            <Style>Solid</Style>
+                          </Border>
+                          <VerticalAlign>Middle</VerticalAlign>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixHeader>
+                  <DataElementOutput>Output</DataElementOutput>
+                  <KeepTogether>true</KeepTogether>
+                </TablixMember>
+                <TablixMember>
+                  <TablixHeader>
+                    <Size>0.35236in</Size>
+                    <CellContents>
+                      <Textbox Name="Textbox12">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>平均比值</Value>
+                                <Style>
+                                  <FontWeight>Bold</FontWeight>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style>
+                              <TextAlign>Center</TextAlign>
+                            </Style>
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>Textbox12</rd:DefaultName>
+                        <Style>
+                          <Border>
+                            <Style>Solid</Style>
+                          </Border>
+                          <VerticalAlign>Middle</VerticalAlign>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixHeader>
+                </TablixMember>
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <Group Name="matrix1_Symbol">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!Symbol.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <SortExpressions>
+                    <SortExpression>
+                      <Value>=Fields!SortOrder.Value</Value>
+                    </SortExpression>
+                  </SortExpressions>
+                  <TablixHeader>
+                    <Size>0.88889in</Size>
+                    <CellContents>
+                      <Textbox Name="Symbol">
+                        <CanGrow>true</CanGrow>
+                        <KeepTogether>true</KeepTogether>
+                        <Paragraphs>
+                          <Paragraph>
+                            <TextRuns>
+                              <TextRun>
+                                <Value>=Fields!Symbol.Value</Value>
+                                <Style>
+                                  <FontSize>12pt</FontSize>
+                                  <Color>=Switch(
+    Fields!SortOrder.Value = 1, "Red",
+	Fields!SortOrder.Value = 2, "Blue",
+	Fields!SortOrder.Value = 7, "White",
+    True, "Black"
+)</Color>
+                                </Style>
+                              </TextRun>
+                            </TextRuns>
+                            <Style>
+                              <TextAlign>Center</TextAlign>
+                            </Style>
+                          </Paragraph>
+                        </Paragraphs>
+                        <rd:DefaultName>Symbol</rd:DefaultName>
+                        <ActionInfo>
+                          <Actions>
+                            <Action>
+                              <Hyperlink>="javascript:void(window.open('/InvestmentReports/report/InvestmentReportProject/StockDetails_V3?symbol=" + Fields!Symbol.Value + "&amp;rc:Zoom=82','_blank'))"</Hyperlink>
+                            </Action>
+                          </Actions>
+                        </ActionInfo>
+                        <Style>
+                          <Border>
+                            <Style>Solid</Style>
+                          </Border>
+                          <BackgroundColor>=Switch(
+    Fields!SortOrder.Value = 3, "Khaki",
+    True, "Transparent"
+)</BackgroundColor>
+                          <VerticalAlign>Middle</VerticalAlign>
+                          <PaddingLeft>2pt</PaddingLeft>
+                          <PaddingRight>2pt</PaddingRight>
+                          <PaddingTop>2pt</PaddingTop>
+                          <PaddingBottom>2pt</PaddingBottom>
+                        </Style>
+                      </Textbox>
+                    </CellContents>
+                  </TablixHeader>
+                  <TablixMembers>
+                    <TablixMember>
+                      <Group Name="matrix1_ChtName">
+                        <GroupExpressions>
+                          <GroupExpression>=Fields!ChtName.Value</GroupExpression>
+                        </GroupExpressions>
+                      </Group>
+                      <SortExpressions>
+                        <SortExpression>
+                          <Value>=Fields!ChtName.Value</Value>
+                        </SortExpression>
+                      </SortExpressions>
+                      <TablixHeader>
+                        <Size>1.1in</Size>
+                        <CellContents>
+                          <Textbox Name="ChtName">
+                            <CanGrow>true</CanGrow>
+                            <KeepTogether>true</KeepTogether>
+                            <Paragraphs>
+                              <Paragraph>
+                                <TextRuns>
+                                  <TextRun>
+                                    <Value>=IIF(Fields!SortOrder.Value = 3, FormatNumber(Avg(Fields!DayClose.Value),2), Fields!ChtName.Value)</Value>
+                                    <Style>
+                                      <FontSize>12pt</FontSize>
+                                      <Color>=Switch(
+    Fields!SortOrder.Value = 1, "Red",
+	Fields!SortOrder.Value = 2, "Blue",
+    True, "Black"
+)</Color>
+                                    </Style>
+                                  </TextRun>
+                                </TextRuns>
+                                <Style>
+                                  <TextAlign>Center</TextAlign>
+                                </Style>
+                              </Paragraph>
+                            </Paragraphs>
+                            <rd:DefaultName>ChtName</rd:DefaultName>
+                            <Style>
+                              <Border>
+                                <Style>Solid</Style>
+                              </Border>
+                              <BackgroundColor>=Switch(
+    Fields!SortOrder.Value = 1, "Khaki",
+	Fields!SortOrder.Value = 2, "Khaki",
+    Fields!SortOrder.Value = 3, "Khaki",
+    True, "Transparent"
+)</BackgroundColor>
+                              <VerticalAlign>Middle</VerticalAlign>
+                              <PaddingLeft>2pt</PaddingLeft>
+                              <PaddingRight>2pt</PaddingRight>
+                              <PaddingTop>2pt</PaddingTop>
+                              <PaddingBottom>2pt</PaddingBottom>
+                            </Style>
+                          </Textbox>
+                        </CellContents>
+                      </TablixHeader>
+                      <DataElementOutput>Output</DataElementOutput>
+                      <KeepTogether>true</KeepTogether>
+                    </TablixMember>
+                  </TablixMembers>
+                  <DataElementOutput>Output</DataElementOutput>
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <RepeatColumnHeaders>true</RepeatColumnHeaders>
+            <RepeatRowHeaders>true</RepeatRowHeaders>
+            <DataSetName>DataSet1</DataSetName>
+            <Top>0.54805in</Top>
+            <Left>0.89746cm</Left>
+            <Height>0.70472in</Height>
+            <Width>3.21889in</Width>
+            <ZIndex>1</ZIndex>
+            <Style />
+          </Tablix>
+          <Tablix Name="Tablix1">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>0.33333in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.88889in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.5in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>4in</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>0.3523in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox23">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox23</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox7">
+                          <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!股票代號.Value</SortExpression>
+                          </UserSort>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>代號</Value>
+                                  <Style>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox7</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox9">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>名稱</Value>
+                                  <Style>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox9</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox11">
+                          <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!相120.Value</SortExpression>
+                          </UserSort>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>相120</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox11</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox15">
+                          <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!相20.Value</SortExpression>
+                          </UserSort>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>相20</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox15</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox17">
+                          <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!相60.Value</SortExpression>
+                          </UserSort>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>相60</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox17</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox19">
+                          <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!產業.Value</SortExpression>
+                          </UserSort>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>產業</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox19</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox21">
+                          <CanGrow>true</CanGrow>
+                          <UserSort>
+                            <SortExpression>=Fields!細產業.Value</SortExpression>
+                          </UserSort>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>細產業</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox21</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.3523in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Row_Num">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Row_Num.Value</Value>
+                                  <Style>
+                                    <FontSize>9pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Row_Num</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="股票代號">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!股票代號.Value</Value>
+                                  <Style>
+                                    <FontSize>12pt</FontSize>
+                                    <Color>=Switch(
+    Fields!Row_Num.Value = 1, "Red",
+	Fields!股票代號.Value = Parameters!InputCode2.Value, "Blue",
+    True, "Black"
+)</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>股票代號</rd:DefaultName>
+                          <ActionInfo>
+                            <Actions>
+                              <Action>
+                                <Hyperlink>="javascript:void(window.open('/InvestmentReports/report/InvestmentReportProject/StockDetails_V3?symbol=" + Fields!股票代號.Value + "&amp;rc:Zoom=82','_blank'))"</Hyperlink>
+                              </Action>
+                            </Actions>
+                          </ActionInfo>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>=Switch(
+    Fields!Row_Num.Value = 1, "#FFD9D9",
+	Fields!股票代號.Value = Parameters!InputCode2.Value, "LightBlue",
+    True, "Transparent"
+)</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="股票名稱">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=IIf(Len(Fields!股票名稱.Value)&gt;1,Fields!股票名稱.Value,"na")</Value>
+                                  <Style>
+                                    <FontSize>12pt</FontSize>
+                                    <Color>=Switch(
+    Fields!Row_Num.Value = 1, "Red",
+	Fields!股票代號.Value = Parameters!InputCode2.Value, "Blue",
+    True, "Black"
+)</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>股票名稱</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>=Switch(
+    Fields!Row_Num.Value = 1, "#FFD9D9",
+	Fields!股票代號.Value = Parameters!InputCode2.Value, "LightBlue",
+    True, "Transparent"
+)</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="相120">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!相120.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <Format>0%</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>相120</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>=IIf(Fields!相120.Value&gt;=0.8,"#FFD9D9","Transparent")</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="相20">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!相20.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <Format>0%</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>相20</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>=IIf(Fields!相20.Value&gt;=0.8,"#FFD9D9","Transparent")</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="相60">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!相60.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <Format>0%</Format>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>相60</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>=IIf(Fields!相60.Value&gt;=0.8,"#FFD9D9","Transparent")</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="產業">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!產業.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <Color>=Switch(
+    Fields!Row_Num.Value = 1, "Red",
+	Fields!股票代號.Value = Parameters!InputCode2.Value, "Blue",
+    True, "Black"
+)</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>產業</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="細產業">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!細產業.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <Color>=Switch(
+    Fields!Row_Num.Value = 1, "Red",
+	Fields!股票代號.Value = Parameters!InputCode2.Value, "Blue",
+    True, "Black"
+)</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>細產業</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                </TablixMember>
+                <TablixMember>
+                  <Group Name="Details" />
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <KeepTogether>true</KeepTogether>
+            <DataSetName>DataSet2</DataSetName>
+            <Top>5.57596in</Top>
+            <Left>0.02in</Left>
+            <Height>0.7046in</Height>
+            <Width>10.72222in</Width>
+            <ZIndex>2</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Tablix>
+          <Tablix Name="Tablix2">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>25.50694in</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>1.54619in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Chart Name="Sparkline1">
+                          <ChartCategoryHierarchy>
+                            <ChartMembers>
+                              <ChartMember>
+                                <Group Name="Sparkline1_CategoryGroup">
+                                  <GroupExpressions>
+                                    <GroupExpression>=Fields!OriginalDate.Value</GroupExpression>
+                                  </GroupExpressions>
+                                </Group>
+                                <SortExpressions>
+                                  <SortExpression>
+                                    <Value>=Fields!OriginalDate.Value</Value>
+                                    <Direction>Descending</Direction>
+                                  </SortExpression>
+                                </SortExpressions>
+                                <Label>=Fields!OriginalDate.Value</Label>
+                              </ChartMember>
+                            </ChartMembers>
+                          </ChartCategoryHierarchy>
+                          <ChartSeriesHierarchy>
+                            <ChartMembers>
+                              <ChartMember>
+                                <Group Name="Sparkline1_SeriesGroup">
+                                  <GroupExpressions>
+                                    <GroupExpression>=Fields!SortOrder.Value</GroupExpression>
+                                  </GroupExpressions>
+                                </Group>
+                                <SortExpressions>
+                                  <SortExpression>
+                                    <Value>=Fields!SortOrder.Value</Value>
+                                  </SortExpression>
+                                </SortExpressions>
+                                <Label>=Fields!SortOrder.Value</Label>
+                              </ChartMember>
+                            </ChartMembers>
+                          </ChartSeriesHierarchy>
+                          <ChartData>
+                            <ChartSeriesCollection>
+                              <ChartSeries Name="DayClose">
+                                <ChartDataPoints>
+                                  <ChartDataPoint>
+                                    <ChartDataPointValues>
+                                      <Y>=Sum(Fields!DayClose.Value)</Y>
+                                    </ChartDataPointValues>
+                                    <ChartDataLabel>
+                                      <Style>
+                                        <Color>=IIf(Fields!SortOrder.Value = 7, "White", "Black")</Color>
+                                      </Style>
+                                      <UseValueAsLabel>true</UseValueAsLabel>
+                                      <Visible>true</Visible>
+                                    </ChartDataLabel>
+                                    <Style>
+                                      <Color>=IIF(Fields!SortOrder.Value = 7, "Gray", "Blue")</Color>
+                                    </Style>
+                                    <ChartMarker>
+                                      <Type>Circle</Type>
+                                      <Size>10pt</Size>
+                                      <Style>
+                                        <Color>=IIF(Fields!DayClose.Value = Max(IIF(Fields!SortOrder.Value = 6, Fields!DayClose.Value, Nothing), "DataSet1"), "Red", 
+ IIF(Fields!DayClose.Value = Min(IIF(Fields!SortOrder.Value = 6, Fields!DayClose.Value, Nothing), "DataSet1"), "Green", "Transparent"))</Color>
+                                      </Style>
+                                    </ChartMarker>
+                                    <DataElementOutput>Output</DataElementOutput>
+                                  </ChartDataPoint>
+                                </ChartDataPoints>
+                                <Type>Line</Type>
+                                <Style />
+                                <ChartEmptyPoints>
+                                  <Style />
+                                  <ChartMarker>
+                                    <Style />
+                                  </ChartMarker>
+                                  <ChartDataLabel>
+                                    <Style />
+                                  </ChartDataLabel>
+                                </ChartEmptyPoints>
+                                <ValueAxisName>Primary</ValueAxisName>
+                                <CategoryAxisName>Primary</CategoryAxisName>
+                                <ChartSmartLabel>
+                                  <CalloutLineColor>Black</CalloutLineColor>
+                                  <MinMovingDistance>0pt</MinMovingDistance>
+                                </ChartSmartLabel>
+                              </ChartSeries>
+                            </ChartSeriesCollection>
+                          </ChartData>
+                          <ChartAreas>
+                            <ChartArea Name="Default">
+                              <ChartCategoryAxes>
+                                <ChartAxis Name="Primary">
+                                  <Visible>False</Visible>
+                                  <Style>
+                                    <Border>
+                                      <Color>Gainsboro</Color>
+                                      <Style>None</Style>
+                                    </Border>
+                                    <FontSize>8pt</FontSize>
+                                    <Color>#5c5c5c</Color>
+                                  </Style>
+                                  <ChartAxisTitle>
+                                    <Caption />
+                                    <Style>
+                                      <FontSize>9pt</FontSize>
+                                      <Color>#5c5c5c</Color>
+                                    </Style>
+                                  </ChartAxisTitle>
+                                  <Margin>False</Margin>
+                                  <ChartMajorGridLines>
+                                    <Enabled>False</Enabled>
+                                    <Style>
+                                      <Border>
+                                        <Color>Gainsboro</Color>
+                                      </Border>
+                                    </Style>
+                                  </ChartMajorGridLines>
+                                  <ChartMinorGridLines>
+                                    <Style>
+                                      <Border>
+                                        <Color>Gainsboro</Color>
+                                        <Style>Dotted</Style>
+                                      </Border>
+                                    </Style>
+                                  </ChartMinorGridLines>
+                                  <ChartMajorTickMarks>
+                                    <Style>
+                                      <Border>
+                                        <Color>Gainsboro</Color>
+                                        <Style>None</Style>
+                                      </Border>
+                                    </Style>
+                                  </ChartMajorTickMarks>
+                                  <ChartMinorTickMarks>
+                                    <Style>
+                                      <Border>
+                                        <Color>Gainsboro</Color>
+                                      </Border>
+                                    </Style>
+                                    <Length>0.5</Length>
+                                  </ChartMinorTickMarks>
+                                  <CrossAt>NaN</CrossAt>
+                                  <Minimum>NaN</Minimum>
+                                  <Maximum>NaN</Maximum>
+                                  <ChartAxisScaleBreak>
+                                    <Style />
+                                  </ChartAxisScaleBreak>
+                                </ChartAxis>
+                                <ChartAxis Name="Secondary">
+                                  <Visible>False</Visible>
+                                  <Style>
+                                    <Border>
+                                      <Color>Gainsboro</Color>
+                                      <Style>None</Style>
+                                    </Border>
+                                    <FontSize>8pt</FontSize>
+                                    <Color>#5c5c5c</Color>
+                                  </Style>
+                                  <ChartAxisTitle>
+                                    <Caption />
+                                    <Style>
+                                      <FontSize>9pt</FontSize>
+                                      <Color>#5c5c5c</Color>
+                                    </Style>
+                                  </ChartAxisTitle>
+                                  <Margin>False</Margin>
+                                  <ChartMajorGridLines>
+                                    <Enabled>False</Enabled>
+                                    <Style>
+                                      <Border>
+                                        <Color>Gainsboro</Color>
+                                      </Border>
+                                    </Style>
+                                  </ChartMajorGridLines>
+                                  <ChartMinorGridLines>
+                                    <Style>
+                                      <Border>
+                                        <Color>Gainsboro</Color>
+                                        <Style>Dotted</Style>
+                                      </Border>
+                                    </Style>
+                                  </ChartMinorGridLines>
+                                  <ChartMajorTickMarks>
+                                    <Style>
+                                      <Border>
+                                        <Color>Gainsboro</Color>
+                                        <Style>None</Style>
+                                      </Border>
+                                    </Style>
+                                  </ChartMajorTickMarks>
+                                  <ChartMinorTickMarks>
+                                    <Style>
+                                      <Border>
+                                        <Color>Gainsboro</Color>
+                                      </Border>
+                                    </Style>
+                                    <Length>0.5</Length>
+                                  </ChartMinorTickMarks>
+                                  <CrossAt>NaN</CrossAt>
+                                  <Location>Opposite</Location>
+                                  <Minimum>NaN</Minimum>
+                                  <Maximum>NaN</Maximum>
+                                  <ChartAxisScaleBreak>
+                                    <Style />
+                                  </ChartAxisScaleBreak>
+                                </ChartAxis>
+                              </ChartCategoryAxes>
+                              <ChartValueAxes>
+                                <ChartAxis Name="Primary">
+                                  <Visible>False</Visible>
+                                  <Style>
+                                    <Border>
+                                      <Color>Gainsboro</Color>
+                                      <Style>None</Style>
+                                    </Border>
+                                    <FontSize>8pt</FontSize>
+                                    <Color>#5c5c5c</Color>
+                                  </Style>
+                                  <ChartAxisTitle>
+                                    <Caption />
+                                    <Style>
+                                      <FontSize>9pt</FontSize>
+                                      <Color>#5c5c5c</Color>
+                                    </Style>
+                                  </ChartAxisTitle>
+                                  <ChartMajorGridLines>
+                                    <Style>
+                                      <Border>
+                                        <Color>Gainsboro</Color>
+                                      </Border>
+                                    </Style>
+                                  </ChartMajorGridLines>
+                                  <ChartMinorGridLines>
+                                    <Style>
+                                      <Border>
+                                        <Color>Gainsboro</Color>
+                                        <Style>Dotted</Style>
+                                      </Border>
+                                    </Style>
+                                  </ChartMinorGridLines>
+                                  <ChartMajorTickMarks>
+                                    <Style>
+                                      <Border>
+                                        <Color>Gainsboro</Color>
+                                        <Style>None</Style>
+                                      </Border>
+                                    </Style>
+                                  </ChartMajorTickMarks>
+                                  <ChartMinorTickMarks>
+                                    <Style>
+                                      <Border>
+                                        <Color>Gainsboro</Color>
+                                      </Border>
+                                    </Style>
+                                    <Length>0.5</Length>
+                                  </ChartMinorTickMarks>
+                                  <CrossAt>NaN</CrossAt>
+                                  <Minimum>=-1 * Max(Abs(IIF(Fields!SortOrder.Value = 6, Fields!DayClose.Value, 0)), "DataSet1")</Minimum>
+                                  <Maximum>=Max(Abs(IIF(Fields!SortOrder.Value = 6, Fields!DayClose.Value, 0)), "DataSet1")</Maximum>
+                                  <IncludeZero>false</IncludeZero>
+                                  <ChartAxisScaleBreak>
+                                    <Style />
+                                  </ChartAxisScaleBreak>
+                                </ChartAxis>
+                                <ChartAxis Name="Secondary">
+                                  <Visible>False</Visible>
+                                  <Style>
+                                    <Border>
+                                      <Color>Gainsboro</Color>
+                                      <Style>None</Style>
+                                    </Border>
+                                    <FontSize>8pt</FontSize>
+                                    <Color>#5c5c5c</Color>
+                                  </Style>
+                                  <ChartAxisTitle>
+                                    <Caption />
+                                    <Style>
+                                      <FontSize>9pt</FontSize>
+                                      <Color>#5c5c5c</Color>
+                                    </Style>
+                                  </ChartAxisTitle>
+                                  <ChartMajorGridLines>
+                                    <Style>
+                                      <Border>
+                                        <Color>Gainsboro</Color>
+                                      </Border>
+                                    </Style>
+                                  </ChartMajorGridLines>
+                                  <ChartMinorGridLines>
+                                    <Style>
+                                      <Border>
+                                        <Color>Gainsboro</Color>
+                                        <Style>Dotted</Style>
+                                      </Border>
+                                    </Style>
+                                  </ChartMinorGridLines>
+                                  <ChartMajorTickMarks>
+                                    <Style>
+                                      <Border>
+                                        <Color>Gainsboro</Color>
+                                        <Style>None</Style>
+                                      </Border>
+                                    </Style>
+                                  </ChartMajorTickMarks>
+                                  <ChartMinorTickMarks>
+                                    <Style>
+                                      <Border>
+                                        <Color>Gainsboro</Color>
+                                      </Border>
+                                    </Style>
+                                    <Length>0.5</Length>
+                                  </ChartMinorTickMarks>
+                                  <CrossAt>NaN</CrossAt>
+                                  <Location>Opposite</Location>
+                                  <Minimum>NaN</Minimum>
+                                  <Maximum>NaN</Maximum>
+                                  <ChartAxisScaleBreak>
+                                    <Style />
+                                  </ChartAxisScaleBreak>
+                                </ChartAxis>
+                              </ChartValueAxes>
+                              <Style>
+                                <BackgroundColor>#00ffffff</BackgroundColor>
+                                <BackgroundGradientType>None</BackgroundGradientType>
+                              </Style>
+                            </ChartArea>
+                          </ChartAreas>
+                          <Palette>Pacific</Palette>
+                          <ChartBorderSkin>
+                            <Style>
+                              <BackgroundColor>Gray</BackgroundColor>
+                              <BackgroundGradientType>None</BackgroundGradientType>
+                              <Color>White</Color>
+                            </Style>
+                          </ChartBorderSkin>
+                          <ChartNoDataMessage Name="NoDataMessage">
+                            <Caption>No Data Available</Caption>
+                            <Style>
+                              <BackgroundGradientType>None</BackgroundGradientType>
+                              <FontWeight>Bold</FontWeight>
+                              <TextAlign>General</TextAlign>
+                              <VerticalAlign>Top</VerticalAlign>
+                            </Style>
+                          </ChartNoDataMessage>
+                          <rd:DesignerMode>Sparkline</rd:DesignerMode>
+                          <DataSetName>DataSet1</DataSetName>
+                          <Filters>
+                            <Filter>
+                              <FilterExpression>=Fields!SortOrder.Value</FilterExpression>
+                              <Operator>GreaterThanOrEqual</Operator>
+                              <FilterValues>
+                                <FilterValue DataType="Integer">6</FilterValue>
+                              </FilterValues>
+                            </Filter>
+                          </Filters>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <BackgroundGradientType>None</BackgroundGradientType>
+                          </Style>
+                        </Chart>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember />
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <DataSetName>DataSet1</DataSetName>
+            <Top>1.49714in</Top>
+            <Left>1.77in</Left>
+            <Height>1.54619in</Height>
+            <Width>25.50694in</Width>
+            <ZIndex>3</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Tablix>
+          <Textbox Name="Textbox20">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>比值 乖離%</Value>
+                    <Style>
+                      <FontSize>14pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                      <Color>DarkBlue</Color>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Textbox20</rd:DefaultName>
+            <Top>2.12909in</Top>
+            <Left>0.65889in</Left>
+            <Height>0.39583in</Height>
+            <Width>1.11111in</Width>
+            <ZIndex>4</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+          <Tablix Name="Tablix3">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>0.88889in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>0.32986in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox6">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>股票代碼</Value>
+                                  <Style>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox6</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox10">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>股票代碼</Value>
+                                  <Style>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox10</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox16">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>相120</Value>
+                                  <Style>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox16</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox18">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>相20</Value>
+                                  <Style>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox16</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.32986in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Stock_A">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Stock_A.Value</Value>
+                                  <Style>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>Red</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Stock_A</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Stock_B">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Stock_B.Value</Value>
+                                  <Style>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Color>Blue</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Stock_B</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Corr120">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Corr120.Value</Value>
+                                  <Style>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Format>0.0%</Format>
+                                    <Color>=IIf(Fields!Corr120.Value&gt;=0.8,"Red","Green")</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Corr120</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>=IIf(Fields!Corr120.Value&gt;=0.8,"#FFD9D9","Transparent")</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Corr201">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Corr20.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <Format>0.0%</Format>
+                                    <Color>=IIf(Fields!Corr20.Value&gt;=0.8,"Red","Green")</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Corr201</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>=IIf(Fields!Corr20.Value&gt;=0.8,"#FFD9D9","Transparent")</BackgroundColor>
+                            <VerticalAlign>Middle</VerticalAlign>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                </TablixMember>
+                <TablixMember>
+                  <Group Name="Details1" />
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <DataSetName>DataSet3</DataSetName>
+            <Top>3.3975in</Top>
+            <Left>0.35333in</Left>
+            <Height>0.65972in</Height>
+            <Width>3.88889in</Width>
+            <ZIndex>5</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Tablix>
+          <Textbox Name="Textbox26">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>股票相關係數</Value>
+                    <Style>
+                      <FontFamily>Segoe UI Light</FontFamily>
+                      <FontSize>22pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Textbox26</rd:DefaultName>
+            <Top>2.88361in</Top>
+            <Left>0.35333in</Left>
+            <Height>0.44444in</Height>
+            <Width>2.02472in</Width>
+            <ZIndex>6</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+          <Textbox Name="Textbox27">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>做配對交易，</Value>
+                    <Style>
+                      <FontFamily>Arial</FontFamily>
+                      <FontSize>11pt</FontSize>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>必須要有事件</Value>
+                    <Style>
+                      <FontFamily>Arial</FontFamily>
+                      <FontSize>11pt</FontSize>
+                      <Color>Red</Color>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>，</Value>
+                    <Style>
+                      <FontSize>11pt</FontSize>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>利用兩檔高度相關的股票之間的價格偏離（乖離）來進行套利的策略</Value>
+                    <Style>
+                      <FontFamily>Arial</FontFamily>
+                      <FontSize>11pt</FontSize>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>。這種雙刀戰法適合用在熱門族群大漲末升段</Value>
+                    <Style>
+                      <FontStyle>Normal</FontStyle>
+                      <FontFamily>Arial</FontFamily>
+                      <FontSize>11pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                      <Color>#000000</Color>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>。</Value>
+                    <Style>
+                      <FontStyle>Normal</FontStyle>
+                      <FontSize>11pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                      <Color>#000000</Color>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>高度相關 : 兩檔股票在 120日 的相關係數在 80% 以上。這代表它們的股價走勢通常是亦步亦趨的。</Value>
+                    <Style>
+                      <FontStyle>Normal</FontStyle>
+                      <FontFamily>Arial</FontFamily>
+                      <FontSize>11pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                      <Color>#000000</Color>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>只要當兩者價格因為某事件</Value>
+                    <Style>
+                      <FontStyle>Normal</FontStyle>
+                      <FontFamily>Arial</FontFamily>
+                      <FontSize>11pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                      <Color>#000000</Color>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>(處置或快</Value>
+                    <Style>
+                      <FontStyle>Normal</FontStyle>
+                      <FontFamily>Arial</FontFamily>
+                      <FontSize>11pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                      <Color>Red</Color>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>處置</Value>
+                    <Style>
+                      <FontStyle>Normal</FontStyle>
+                      <FontSize>11pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                      <Color>Red</Color>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>)</Value>
+                    <Style>
+                      <FontStyle>Normal</FontStyle>
+                      <FontFamily>Arial</FontFamily>
+                      <FontSize>11pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                      <Color>Red</Color>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>發生</Value>
+                    <Style>
+                      <FontStyle>Normal</FontStyle>
+                      <FontFamily>Arial</FontFamily>
+                      <FontSize>11pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                      <Color>#000000</Color>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>，</Value>
+                    <Style>
+                      <FontStyle>Normal</FontStyle>
+                      <FontSize>11pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                      <Color>#000000</Color>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>出現異常脫鉤，那就有機會回歸。</Value>
+                    <Style>
+                      <FontStyle>Normal</FontStyle>
+                      <FontFamily>Arial</FontFamily>
+                      <FontSize>11pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                      <Color>#000000</Color>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>例如 : A股票進處置</Value>
+                    <Style>
+                      <FontStyle>Normal</FontStyle>
+                      <FontFamily>Arial</FontFamily>
+                      <FontSize>11pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                      <Color>#000000</Color>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>，股價受到壓抑，主力資金可能進入B</Value>
+                    <Style>
+                      <FontSize>11pt</FontSize>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>股票</Value>
+                    <Style>
+                      <FontStyle>Normal</FontStyle>
+                      <FontSize>11pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                      <Color>#000000</Color>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>，造成兩檔股</Value>
+                    <Style>
+                      <FontSize>11pt</FontSize>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>票</Value>
+                    <Style>
+                      <FontStyle>Normal</FontStyle>
+                      <FontSize>11pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                      <Color>#000000</Color>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>在一段時間的股價比值偏離均值過大&gt;10%</Value>
+                    <Style>
+                      <FontSize>11pt</FontSize>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>。</Value>
+                    <Style>
+                      <FontStyle>Normal</FontStyle>
+                      <FontSize>11pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                      <Color>#000000</Color>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>如何尋找標的 : 記憶體族群到2026/01漲數倍，陸續有股票近處置。我們可以用位階排序，找記憶體中(位階最低+主10最好)的股票做多，用他去搭配另一檔做空。</Value>
+                    <Style>
+                      <FontStyle>Normal</FontStyle>
+                      <FontSize>11pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                      <TextDecoration>None</TextDecoration>
+                      <Color>#000000</Color>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Textbox27</rd:DefaultName>
+            <Top>4.21in</Top>
+            <Left>0.35333in</Left>
+            <Height>1.19235in</Height>
+            <Width>10.38889in</Width>
+            <ZIndex>7</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+        </ReportItems>
+        <Height>6.28056in</Height>
+        <Style />
+      </Body>
+      <Width>27.48527in</Width>
+      <Page>
+        <LeftMargin>1in</LeftMargin>
+        <RightMargin>1in</RightMargin>
+        <TopMargin>1in</TopMargin>
+        <BottomMargin>1in</BottomMargin>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="InputCode1">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>1815</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>股票代碼 1</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="InputCode2">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>1802</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>股票代碼 2</Prompt>
+    </ReportParameter>
+  </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>8</NumberOfColumns>
+      <NumberOfRows>1</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>6</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>InputCode1</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>7</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>InputCode2</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
+  <Language>en-US</Language>
+  <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+  <rd:ReportID>ab08177b-3483-4045-a6ff-dd956f2473ff</rd:ReportID>
+</Report>
