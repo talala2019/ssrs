@@ -1,21 +1,16 @@
-# Visual Studio / SSDT
+# Visual Studio
 .vs/
 *.user
 *.suo
-*.sln.docstates
+*.bak
 
 # SSIS build output
 bin/
 obj/
 
-# SSRS deployment artifacts
-*.rptproj.user
+# SSRS build output
+InvestmentReportProject/InvestmentReportProject/bin/
 
 # Windows
 Thumbs.db
-desktop.ini
-
-# Temp files
-*.tmp
-*.bak
-*.log
+Desktop.ini
