@@ -55,6 +55,9 @@ ORDER BY ii.IndustryName
           <QueryParameter Name="@IndustryNames">
             <Value>=Parameters!IndustryNames.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@symbol">
+            <Value>=Parameters!symbol.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandText>
 DECLARE @CurYear  INT = YEAR(GETDATE())
@@ -169,6 +172,7 @@ WHERE c.Status = 1 AND c.CountryCode = 'TW'
           AND cdi.IndustryNames LIKE '%' + ii.IndustryName + '%'
       )
   )
+  AND (ISNULL(@symbol, '') = '' OR LEFT(c.Symbol, 4) = LEFT(LTRIM(RTRIM(@symbol)), 4))
   AND m1.amt &gt; 0
   AND m1.amt &gt; pm1.amt
   AND m2.amt &gt; pm2.amt
@@ -230,6 +234,12 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
         </DataSetReference>
       </DefaultValue>
       <Prompt>細產業</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="symbol">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>Symbol（空白=全部）</Prompt>
     </ReportParameter>
   </ReportParameters>
   <ReportSections>
@@ -504,7 +514,7 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
   </ReportSections>
   <ReportParametersLayout>
     <GridLayoutDefinition>
-      <NumberOfColumns>2</NumberOfColumns>
+      <NumberOfColumns>3</NumberOfColumns>
       <NumberOfRows>1</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
@@ -516,6 +526,11 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
           <ColumnIndex>1</ColumnIndex>
           <RowIndex>0</RowIndex>
           <ParameterName>IndustryNames</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>symbol</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
