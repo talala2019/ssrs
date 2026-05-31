@@ -719,25 +719,33 @@ ORDER BY ms.Year, v.MonthNum
                       </ChartMarker>
                     </ChartDataPoint>
                   </ChartDataPoints>
-                  <ChartCategoryGroupings>
-                    <ChartCategoryGrouping>
-                      <ChartGroupExpressions>
-                        <ChartGroupExpression>=Fields!MonthNum.Value</ChartGroupExpression>
-                      </ChartGroupExpressions>
-                      <Label>=Fields!MonthName.Value</Label>
-                    </ChartCategoryGrouping>
-                  </ChartCategoryGroupings>
-                  <ChartSeriesGroupings>
-                    <ChartSeriesGrouping>
-                      <ChartGroupExpressions>
-                        <ChartGroupExpression>=Fields!Year.Value</ChartGroupExpression>
-                      </ChartGroupExpressions>
-                      <Label>=CStr(Fields!Year.Value)</Label>
-                    </ChartSeriesGrouping>
-                  </ChartSeriesGroupings>
                   <Type>Line</Type>
                 </ChartSeries>
               </ChartSeriesCollection>
+              <ChartCategoryHierarchy>
+                <ChartMembers>
+                  <ChartMember>
+                    <Group Name="CategoryGroup">
+                      <GroupExpressions>
+                        <GroupExpression>=Fields!MonthNum.Value</GroupExpression>
+                      </GroupExpressions>
+                    </Group>
+                    <Label>=Fields!MonthName.Value</Label>
+                  </ChartMember>
+                </ChartMembers>
+              </ChartCategoryHierarchy>
+              <ChartSeriesHierarchy>
+                <ChartMembers>
+                  <ChartMember>
+                    <Group Name="SeriesGroup">
+                      <GroupExpressions>
+                        <GroupExpression>=Fields!Year.Value</GroupExpression>
+                      </GroupExpressions>
+                    </Group>
+                    <Label>=CStr(Fields!Year.Value)</Label>
+                  </ChartMember>
+                </ChartMembers>
+              </ChartSeriesHierarchy>
             </ChartData>
             <ChartAreas>
               <ChartArea Name="Default">
