@@ -162,6 +162,49 @@ ORDER BY w.Year
         <Field Name="EstSales"><DataField>EstSales</DataField><rd:TypeName>System.Int64</rd:TypeName></Field>
       </Fields>
     </DataSet>
+    <DataSet Name="MonthlyTrendData">
+      <Query>
+        <DataSourceName>DataSource_localhost</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@symbol">
+            <Value>=Parameters!symbol.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@startYear">
+            <Value>=Parameters!StartYear.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>
+DECLARE @CID INT
+SELECT TOP 1 @CID = CompanyID FROM Company
+WHERE LEFT(Symbol, 4) = LEFT(LTRIM(RTRIM(@symbol)), 4)
+
+SELECT ms.Year, v.MonthNum, v.MonthName, v.Amount
+FROM MonthlySales ms
+CROSS APPLY (VALUES
+    (1,  'Jan', ISNULL(ms.Jan,0)/1000.0),
+    (2,  'Feb', ISNULL(ms.Feb,0)/1000.0),
+    (3,  'Mar', ISNULL(ms.Mar,0)/1000.0),
+    (4,  'Apr', ISNULL(ms.April,0)/1000.0),
+    (5,  'May', ISNULL(ms.May,0)/1000.0),
+    (6,  'Jun', ISNULL(ms.June,0)/1000.0),
+    (7,  'Jul', ISNULL(ms.July,0)/1000.0),
+    (8,  'Aug', ISNULL(ms.Aug,0)/1000.0),
+    (9,  'Sep', ISNULL(ms.Sep,0)/1000.0),
+    (10, 'Oct', ISNULL(ms.Oct,0)/1000.0),
+    (11, 'Nov', ISNULL(ms.Nov,0)/1000.0),
+    (12, 'Dec', ISNULL(ms.Dec,0)/1000.0)
+) AS v(MonthNum, MonthName, Amount)
+WHERE ms.CompanyId = @CID AND ms.Year &gt;= @startYear AND v.Amount &gt; 0
+ORDER BY ms.Year, v.MonthNum
+        </CommandText>
+      </Query>
+      <Fields>
+        <Field Name="Year"><DataField>Year</DataField><rd:TypeName>System.Int32</rd:TypeName></Field>
+        <Field Name="MonthNum"><DataField>MonthNum</DataField><rd:TypeName>System.Int32</rd:TypeName></Field>
+        <Field Name="MonthName"><DataField>MonthName</DataField><rd:TypeName>System.String</rd:TypeName></Field>
+        <Field Name="Amount"><DataField>Amount</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportParameters>
     <ReportParameter Name="symbol">
@@ -661,8 +704,110 @@ ORDER BY w.Year
             <ZIndex>1</ZIndex>
             <Style />
           </Tablix>
+          <Chart Name="SalesTrendChart">
+            <ChartData>
+              <ChartSeriesCollection>
+                <ChartSeries Name="TrendSeries">
+                  <ChartDataPoints>
+                    <ChartDataPoint>
+                      <ChartDataPointValues>
+                        <Y>=Fields!Amount.Value</Y>
+                      </ChartDataPointValues>
+                      <ChartMarker>
+                        <Type>Circle</Type>
+                        <Size>4pt</Size>
+                      </ChartMarker>
+                    </ChartDataPoint>
+                  </ChartDataPoints>
+                  <Type>Line</Type>
+                </ChartSeries>
+              </ChartSeriesCollection>
+              <ChartCategoryHierarchy>
+                <ChartMembers>
+                  <ChartMember>
+                    <Group Name="CategoryGroup">
+                      <GroupExpressions>
+                        <GroupExpression>=Fields!MonthNum.Value</GroupExpression>
+                      </GroupExpressions>
+                    </Group>
+                    <Label>=Fields!MonthName.Value</Label>
+                  </ChartMember>
+                </ChartMembers>
+              </ChartCategoryHierarchy>
+              <ChartSeriesHierarchy>
+                <ChartMembers>
+                  <ChartMember>
+                    <Group Name="SeriesGroup">
+                      <GroupExpressions>
+                        <GroupExpression>=Fields!Year.Value</GroupExpression>
+                      </GroupExpressions>
+                    </Group>
+                    <Label>=CStr(Fields!Year.Value)</Label>
+                  </ChartMember>
+                </ChartMembers>
+              </ChartSeriesHierarchy>
+            </ChartData>
+            <ChartAreas>
+              <ChartArea Name="Default">
+                <ChartPlotAreas>
+                  <ChartPlotArea>
+                    <Style>
+                      <BackgroundColor>WhiteSmoke</BackgroundColor>
+                    </Style>
+                  </ChartPlotArea>
+                </ChartPlotAreas>
+                <ChartCategoryAxes>
+                  <ChartAxis Name="Primary">
+                    <Style><FontSize>9pt</FontSize></Style>
+                    <ChartAxisTitle>
+                      <Caption>月份</Caption>
+                      <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight></Style>
+                    </ChartAxisTitle>
+                    <MajorGridLines><Enabled>False</Enabled></MajorGridLines>
+                  </ChartAxis>
+                </ChartCategoryAxes>
+                <ChartValueAxes>
+                  <ChartAxis Name="Primary">
+                    <Style><FontSize>9pt</FontSize></Style>
+                    <ChartAxisTitle>
+                      <Caption>營收（千元）</Caption>
+                      <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight></Style>
+                    </ChartAxisTitle>
+                    <LabelFormat>#,#0</LabelFormat>
+                    <MajorGridLines>
+                      <Style>
+                        <BorderStyle>Dashed</BorderStyle>
+                        <BorderColor>LightGray</BorderColor>
+                      </Style>
+                    </MajorGridLines>
+                  </ChartAxis>
+                </ChartValueAxes>
+              </ChartArea>
+            </ChartAreas>
+            <ChartLegend Name="Default">
+              <Style><FontSize>9pt</FontSize></Style>
+              <Position>TopRight</Position>
+            </ChartLegend>
+            <ChartTitles>
+              <ChartTitle Name="Title1">
+                <Caption>月營收走勢</Caption>
+                <Style>
+                  <FontFamily>Segoe UI Light</FontFamily>
+                  <FontSize>14pt</FontSize>
+                  <FontWeight>Bold</FontWeight>
+                </Style>
+              </ChartTitle>
+            </ChartTitles>
+            <DataSetName>MonthlyTrendData</DataSetName>
+            <Top>3.2in</Top>
+            <Left>0in</Left>
+            <Height>3.5in</Height>
+            <Width>14.85in</Width>
+            <ZIndex>2</ZIndex>
+            <Style><Border><Style>None</Style></Border></Style>
+          </Chart>
         </ReportItems>
-        <Height>3in</Height>
+        <Height>7in</Height>
         <Style />
       </Body>
       <Width>15.85in</Width>
@@ -713,5 +858,5 @@ End Function
   <Language>zh-TW</Language>
   <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
   <rd:ReportUnitType>Inch</rd:ReportUnitType>
-  <rd:ReportID>b8c4d3e5-f7a8-4b9c-ad1e-2f3b4c5d6e7f</rd:ReportID>
+  <rd:ReportID>c9d5e4f6-a8b9-5c0d-be2f-3a4b5c6d7e8f</rd:ReportID>
 </Report>

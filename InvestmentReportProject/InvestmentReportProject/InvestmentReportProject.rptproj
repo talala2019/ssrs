@@ -69,6 +69,7 @@
     <Report Include="L_M_Log_Report_3Min_1.rdl" />
     <Report Include="MarketData.rdl" />
     <Report Include="MonthlySales.rdl" />
+    <Report Include="MonthlySales_Chart.rdl" />
     <Report Include="MatchOnBidOrAsk.rdl" />
     <Report Include="MatchOnBidOrAsk_V2.rdl" />
     <Report Include="QuoteSummary.rdl" />
