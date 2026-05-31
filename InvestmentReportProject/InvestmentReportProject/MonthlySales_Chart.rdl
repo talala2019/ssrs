@@ -749,13 +749,6 @@ ORDER BY ms.Year, v.MonthNum
             </ChartSeriesHierarchy>
             <ChartAreas>
               <ChartArea Name="Default">
-                <ChartPlotAreas>
-                  <ChartPlotArea>
-                    <Style>
-                      <BackgroundColor>WhiteSmoke</BackgroundColor>
-                    </Style>
-                  </ChartPlotArea>
-                </ChartPlotAreas>
                 <ChartCategoryAxes>
                   <ChartAxis Name="Primary">
                     <Style><FontSize>9pt</FontSize></Style>
