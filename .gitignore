@@ -4,6 +4,10 @@
 *.suo
 *.bak
 
+# SSIS packages and project files (contain connection strings with credentials)
+*.dtsx
+*.dtproj
+
 # SSIS build output
 bin/
 obj/
