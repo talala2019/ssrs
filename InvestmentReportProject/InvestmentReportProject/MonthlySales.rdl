@@ -713,10 +713,10 @@ ORDER BY ms.Year, v.MonthNum
                       <ChartDataPointValues>
                         <Y>=Fields!Amount.Value</Y>
                       </ChartDataPointValues>
-                      <Style>
-                        <MarkerType>Circle</MarkerType>
-                        <MarkerSize>4pt</MarkerSize>
-                      </Style>
+                      <ChartMarker>
+                        <Type>Circle</Type>
+                        <Size>4pt</Size>
+                      </ChartMarker>
                     </ChartDataPoint>
                   </ChartDataPoints>
                   <ChartCategoryGroupings>
