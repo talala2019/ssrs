@@ -756,7 +756,7 @@ ORDER BY ms.Year, v.MonthNum
                       <Caption>月份</Caption>
                       <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight></Style>
                     </ChartAxisTitle>
-                    <MajorGridLines><Enabled>False</Enabled></MajorGridLines>
+                    <ChartMajorGridLines><Enabled>False</Enabled></ChartMajorGridLines>
                   </ChartAxis>
                 </ChartCategoryAxes>
                 <ChartValueAxes>
@@ -767,12 +767,12 @@ ORDER BY ms.Year, v.MonthNum
                       <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight></Style>
                     </ChartAxisTitle>
                     <LabelFormat>#,#0</LabelFormat>
-                    <MajorGridLines>
+                    <ChartMajorGridLines>
                       <Style>
                         <BorderStyle>Dashed</BorderStyle>
                         <BorderColor>LightGray</BorderColor>
                       </Style>
-                    </MajorGridLines>
+                    </ChartMajorGridLines>
                   </ChartAxis>
                 </ChartValueAxes>
               </ChartArea>
