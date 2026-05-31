@@ -768,8 +768,10 @@ ORDER BY ms.Year, v.MonthNum
                     </ChartAxisTitle>
                     <ChartMajorGridLines>
                       <Style>
-                        <BorderStyle>Dashed</BorderStyle>
-                        <BorderColor>LightGray</BorderColor>
+                        <Border>
+                          <Style>Dashed</Style>
+                          <Color>LightGray</Color>
+                        </Border>
                       </Style>
                     </ChartMajorGridLines>
                   </ChartAxis>
