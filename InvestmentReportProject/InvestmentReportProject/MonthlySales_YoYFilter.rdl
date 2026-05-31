@@ -176,7 +176,6 @@ WHERE c.Status = 1 AND c.CountryCode = 'TW'
   AND m1.amt &gt; 0
   AND m1.amt &gt; pm1.amt
   AND m2.amt &gt; pm2.amt
-  AND m3.amt &gt; pm3.amt
 ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
         </CommandText>
       </Query>
@@ -253,7 +252,7 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>="月營收 YoY 篩選 - 近3月連續成長 (截至 " &amp; First(Fields!M1Label.Value, "ScreeningData") &amp; ")"</Value>
+                    <Value>="月營收 YoY 篩選 - 近2月連續成長 (截至 " &amp; First(Fields!M1Label.Value, "ScreeningData") &amp; ")"</Value>
                     <Style><FontFamily>Segoe UI Light</FontFamily><FontSize>18pt</FontSize><FontWeight>Bold</FontWeight></Style>
                   </TextRun>
                 </TextRuns>
