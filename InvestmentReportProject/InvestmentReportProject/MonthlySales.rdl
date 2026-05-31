@@ -1,0 +1,717 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report MustUnderstand="df" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:df="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition/defaultfontfamily">
+  <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="DataSource_localhost">
+      <DataSourceReference>DataSource_localhost</DataSourceReference>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>56cd27f5-46d2-4105-a744-8706f1cbd54f</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="MonthlySalesData">
+      <Query>
+        <DataSourceName>DataSource_localhost</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@symbol">
+            <Value>=Parameters!symbol.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@startYear">
+            <Value>=Parameters!StartYear.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>
+DECLARE @CID INT
+SELECT TOP 1 @CID = CompanyID FROM Company
+WHERE LEFT(Symbol, 4) = LEFT(LTRIM(RTRIM(@symbol)), 4)
+
+DECLARE @ChtName NVARCHAR(200)
+SELECT @ChtName = ChtName FROM Company WHERE CompanyID = @CID
+
+DECLARE @LatestYear INT
+SELECT TOP 1 @LatestYear = Year FROM MonthlySales WHERE CompanyId = @CID ORDER BY Year DESC
+
+DECLARE @MonthCount INT
+SELECT @MonthCount =
+    (CASE WHEN ISNULL(Jan,0) &gt; 0 THEN 1 ELSE 0 END +
+     CASE WHEN ISNULL(Feb,0) &gt; 0 THEN 1 ELSE 0 END +
+     CASE WHEN ISNULL(Mar,0) &gt; 0 THEN 1 ELSE 0 END +
+     CASE WHEN ISNULL(April,0) &gt; 0 THEN 1 ELSE 0 END +
+     CASE WHEN ISNULL(May,0) &gt; 0 THEN 1 ELSE 0 END +
+     CASE WHEN ISNULL(June,0) &gt; 0 THEN 1 ELSE 0 END +
+     CASE WHEN ISNULL(July,0) &gt; 0 THEN 1 ELSE 0 END +
+     CASE WHEN ISNULL(Aug,0) &gt; 0 THEN 1 ELSE 0 END +
+     CASE WHEN ISNULL(Sep,0) &gt; 0 THEN 1 ELSE 0 END +
+     CASE WHEN ISNULL(Oct,0) &gt; 0 THEN 1 ELSE 0 END +
+     CASE WHEN ISNULL(Nov,0) &gt; 0 THEN 1 ELSE 0 END +
+     CASE WHEN ISNULL(Dec,0) &gt; 0 THEN 1 ELSE 0 END)
+FROM MonthlySales
+WHERE CompanyId = @CID AND Year = @LatestYear
+
+;WITH Base AS (
+    SELECT
+        ms.Year,
+        ISNULL(ms.Jan,0)/1000.0 AS Jan,
+        ISNULL(ms.Feb,0)/1000.0 AS Feb,
+        ISNULL(ms.Mar,0)/1000.0 AS Mar,
+        ISNULL(ms.April,0)/1000.0 AS April,
+        ISNULL(ms.May,0)/1000.0 AS May,
+        ISNULL(ms.June,0)/1000.0 AS June,
+        ISNULL(ms.July,0)/1000.0 AS July,
+        ISNULL(ms.Aug,0)/1000.0 AS Aug,
+        ISNULL(ms.Sep,0)/1000.0 AS Sep,
+        ISNULL(ms.Oct,0)/1000.0 AS Oct,
+        ISNULL(ms.Nov,0)/1000.0 AS Nov,
+        ISNULL(ms.Dec,0)/1000.0 AS Dec,
+        ISNULL(ms.TotalSales,0)/1000.0 AS TotalSales,
+        (CASE WHEN @MonthCount &gt;= 1 THEN ISNULL(ms.Jan,0) ELSE 0 END +
+         CASE WHEN @MonthCount &gt;= 2 THEN ISNULL(ms.Feb,0) ELSE 0 END +
+         CASE WHEN @MonthCount &gt;= 3 THEN ISNULL(ms.Mar,0) ELSE 0 END +
+         CASE WHEN @MonthCount &gt;= 4 THEN ISNULL(ms.April,0) ELSE 0 END +
+         CASE WHEN @MonthCount &gt;= 5 THEN ISNULL(ms.May,0) ELSE 0 END +
+         CASE WHEN @MonthCount &gt;= 6 THEN ISNULL(ms.June,0) ELSE 0 END +
+         CASE WHEN @MonthCount &gt;= 7 THEN ISNULL(ms.July,0) ELSE 0 END +
+         CASE WHEN @MonthCount &gt;= 8 THEN ISNULL(ms.Aug,0) ELSE 0 END +
+         CASE WHEN @MonthCount &gt;= 9 THEN ISNULL(ms.Sep,0) ELSE 0 END +
+         CASE WHEN @MonthCount &gt;= 10 THEN ISNULL(ms.Oct,0) ELSE 0 END +
+         CASE WHEN @MonthCount &gt;= 11 THEN ISNULL(ms.Nov,0) ELSE 0 END +
+         CASE WHEN @MonthCount &gt;= 12 THEN ISNULL(ms.Dec,0) ELSE 0 END
+        ) / 1000.0 AS SamePeriodYTD,
+        CASE WHEN ms.Year = @LatestYear THEN 1 ELSE 0 END AS IsCurrentYear
+    FROM MonthlySales ms
+    WHERE ms.CompanyId = @CID
+),
+WithLag AS (
+    SELECT
+        b.*,
+        LAG(b.Jan)   OVER (ORDER BY b.Year) AS PrevJan,
+        LAG(b.Feb)   OVER (ORDER BY b.Year) AS PrevFeb,
+        LAG(b.Mar)   OVER (ORDER BY b.Year) AS PrevMar,
+        LAG(b.April) OVER (ORDER BY b.Year) AS PrevApril,
+        LAG(b.May)   OVER (ORDER BY b.Year) AS PrevMay,
+        LAG(b.June)  OVER (ORDER BY b.Year) AS PrevJune,
+        LAG(b.July)  OVER (ORDER BY b.Year) AS PrevJuly,
+        LAG(b.Aug)   OVER (ORDER BY b.Year) AS PrevAug,
+        LAG(b.Sep)   OVER (ORDER BY b.Year) AS PrevSep,
+        LAG(b.Oct)   OVER (ORDER BY b.Year) AS PrevOct,
+        LAG(b.Nov)   OVER (ORDER BY b.Year) AS PrevNov,
+        LAG(b.Dec)   OVER (ORDER BY b.Year) AS PrevDec,
+        LAG(b.TotalSales)    OVER (ORDER BY b.Year) AS PrevTotalSales,
+        LAG(b.SamePeriodYTD) OVER (ORDER BY b.Year) AS PrevSamePeriodYTD
+    FROM Base b
+)
+SELECT
+    @ChtName AS ChtName,
+    w.Year,
+    w.Jan, w.Feb, w.Mar, w.April, w.May, w.June,
+    w.July, w.Aug, w.Sep, w.Oct, w.Nov, w.Dec,
+    w.TotalSales,
+    w.IsCurrentYear,
+    ISNULL(w.PrevJan,0)   AS PrevJan,   ISNULL(w.PrevFeb,0)   AS PrevFeb,
+    ISNULL(w.PrevMar,0)   AS PrevMar,   ISNULL(w.PrevApril,0) AS PrevApril,
+    ISNULL(w.PrevMay,0)   AS PrevMay,   ISNULL(w.PrevJune,0)  AS PrevJune,
+    ISNULL(w.PrevJuly,0)  AS PrevJuly,  ISNULL(w.PrevAug,0)   AS PrevAug,
+    ISNULL(w.PrevSep,0)   AS PrevSep,   ISNULL(w.PrevOct,0)   AS PrevOct,
+    ISNULL(w.PrevNov,0)   AS PrevNov,   ISNULL(w.PrevDec,0)   AS PrevDec,
+    CASE WHEN ISNULL(w.PrevTotalSales,0) &gt; 0
+         THEN CAST(w.TotalSales / w.PrevTotalSales AS DECIMAL(10,3))
+         ELSE NULL END AS YoY,
+    CASE WHEN ISNULL(w.PrevSamePeriodYTD,0) &gt; 0 AND w.IsCurrentYear = 1
+         THEN CAST(w.SamePeriodYTD / w.PrevSamePeriodYTD AS DECIMAL(10,3))
+         ELSE NULL END AS MoM,
+    CASE WHEN ISNULL(w.PrevSamePeriodYTD,0) &gt; 0 AND ISNULL(w.PrevTotalSales,0) &gt; 0 AND w.IsCurrentYear = 1
+         THEN CAST(w.SamePeriodYTD / w.PrevSamePeriodYTD * w.PrevTotalSales AS BIGINT)
+         ELSE 0 END AS EstSales
+FROM WithLag w
+WHERE w.Year >= @startYear
+ORDER BY w.Year
+        </CommandText>
+      </Query>
+      <Fields>
+        <Field Name="ChtName"><DataField>ChtName</DataField><rd:TypeName>System.String</rd:TypeName></Field>
+        <Field Name="Year"><DataField>Year</DataField><rd:TypeName>System.Int32</rd:TypeName></Field>
+        <Field Name="Jan"><DataField>Jan</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="Feb"><DataField>Feb</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="Mar"><DataField>Mar</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="April"><DataField>April</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="May"><DataField>May</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="June"><DataField>June</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="July"><DataField>July</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="Aug"><DataField>Aug</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="Sep"><DataField>Sep</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="Oct"><DataField>Oct</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="Nov"><DataField>Nov</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="Dec"><DataField>Dec</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="TotalSales"><DataField>TotalSales</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="IsCurrentYear"><DataField>IsCurrentYear</DataField><rd:TypeName>System.Int32</rd:TypeName></Field>
+        <Field Name="PrevJan"><DataField>PrevJan</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="PrevFeb"><DataField>PrevFeb</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="PrevMar"><DataField>PrevMar</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="PrevApril"><DataField>PrevApril</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="PrevMay"><DataField>PrevMay</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="PrevJune"><DataField>PrevJune</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="PrevJuly"><DataField>PrevJuly</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="PrevAug"><DataField>PrevAug</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="PrevSep"><DataField>PrevSep</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="PrevOct"><DataField>PrevOct</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="PrevNov"><DataField>PrevNov</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="PrevDec"><DataField>PrevDec</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="YoY"><DataField>YoY</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="MoM"><DataField>MoM</DataField><rd:TypeName>System.Decimal</rd:TypeName></Field>
+        <Field Name="EstSales"><DataField>EstSales</DataField><rd:TypeName>System.Int64</rd:TypeName></Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportParameters>
+    <ReportParameter Name="symbol">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>2317</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Symbol</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="StartYear">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>=Year(Today()) - 6</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>起始年份</Prompt>
+    </ReportParameter>
+  </ReportParameters>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Textbox Name="ReportTitle">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>="月營收報表 - " &amp; Parameters!symbol.Value &amp; "  " &amp; First(Fields!ChtName.Value, "MonthlySalesData")</Value>
+                    <Style>
+                      <FontFamily>Segoe UI Light</FontFamily>
+                      <FontSize>20pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>ReportTitle</rd:DefaultName>
+            <Height>0.5in</Height>
+            <Width>10in</Width>
+            <Style>
+              <PaddingLeft>2pt</PaddingLeft>
+              <PaddingRight>2pt</PaddingRight>
+              <PaddingTop>2pt</PaddingTop>
+              <PaddingBottom>2pt</PaddingBottom>
+            </Style>
+          </Textbox>
+          <Tablix Name="MonthlySalesTable">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn><Width>0.55in</Width></TablixColumn>
+                <TablixColumn><Width>0.92in</Width></TablixColumn>
+                <TablixColumn><Width>0.92in</Width></TablixColumn>
+                <TablixColumn><Width>0.92in</Width></TablixColumn>
+                <TablixColumn><Width>0.92in</Width></TablixColumn>
+                <TablixColumn><Width>0.92in</Width></TablixColumn>
+                <TablixColumn><Width>0.92in</Width></TablixColumn>
+                <TablixColumn><Width>0.92in</Width></TablixColumn>
+                <TablixColumn><Width>0.92in</Width></TablixColumn>
+                <TablixColumn><Width>0.92in</Width></TablixColumn>
+                <TablixColumn><Width>0.92in</Width></TablixColumn>
+                <TablixColumn><Width>0.92in</Width></TablixColumn>
+                <TablixColumn><Width>0.92in</Width></TablixColumn>
+                <TablixColumn><Width>1.05in</Width></TablixColumn>
+                <TablixColumn><Width>0.65in</Width></TablixColumn>
+                <TablixColumn><Width>0.65in</Width></TablixColumn>
+                <TablixColumn><Width>1.20in</Width></TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <!-- Header Row -->
+                <TablixRow>
+                  <Height>0.30in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hdr_Year">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun><Value>Year</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hdr_Jan">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun><Value>Jan</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hdr_Feb">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun><Value>Feb</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hdr_Mar">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun><Value>Mar</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hdr_Apr">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun><Value>Apr</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hdr_May">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun><Value>May</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hdr_Jun">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun><Value>Jun</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hdr_Jul">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun><Value>Jul</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hdr_Aug">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun><Value>Aug</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hdr_Sep">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun><Value>Sep</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hdr_Oct">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun><Value>Oct</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hdr_Nov">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun><Value>Nov</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hdr_Dec">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun><Value>Dec</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hdr_Total">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun><Value>Total</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hdr_YoY">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun><Value>YoY</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hdr_MoM">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun><Value>MoM</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hdr_EstSales">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun><Value>EstSales</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <!-- Data Row -->
+                <TablixRow>
+                  <Height>0.27in</Height>
+                  <TablixCells>
+                    <!-- Year -->
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dat_Year">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun>
+                            <Value>=Fields!Year.Value</Value>
+                            <Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight></Style>
+                          </TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>=Code.RowBg(Fields!IsCurrentYear.Value)</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <!-- Jan -->
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dat_Jan">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun>
+                            <Value>=Code.MonthDisplay(Fields!Jan.Value)</Value>
+                            <Style><FontSize>11pt</FontSize><Color>=Code.MonthColor(Fields!Jan.Value, Fields!PrevJan.Value)</Color></Style>
+                          </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>=Code.RowBg(Fields!IsCurrentYear.Value)</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <!-- Feb -->
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dat_Feb">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun>
+                            <Value>=Code.MonthDisplay(Fields!Feb.Value)</Value>
+                            <Style><FontSize>11pt</FontSize><Color>=Code.MonthColor(Fields!Feb.Value, Fields!PrevFeb.Value)</Color></Style>
+                          </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>=Code.RowBg(Fields!IsCurrentYear.Value)</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <!-- Mar -->
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dat_Mar">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun>
+                            <Value>=Code.MonthDisplay(Fields!Mar.Value)</Value>
+                            <Style><FontSize>11pt</FontSize><Color>=Code.MonthColor(Fields!Mar.Value, Fields!PrevMar.Value)</Color></Style>
+                          </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>=Code.RowBg(Fields!IsCurrentYear.Value)</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <!-- April -->
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dat_April">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun>
+                            <Value>=Code.MonthDisplay(Fields!April.Value)</Value>
+                            <Style><FontSize>11pt</FontSize><Color>=Code.MonthColor(Fields!April.Value, Fields!PrevApril.Value)</Color></Style>
+                          </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>=Code.RowBg(Fields!IsCurrentYear.Value)</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <!-- May -->
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dat_May">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun>
+                            <Value>=Code.MonthDisplay(Fields!May.Value)</Value>
+                            <Style><FontSize>11pt</FontSize><Color>=Code.MonthColor(Fields!May.Value, Fields!PrevMay.Value)</Color></Style>
+                          </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>=Code.RowBg(Fields!IsCurrentYear.Value)</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <!-- June -->
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dat_June">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun>
+                            <Value>=Code.MonthDisplay(Fields!June.Value)</Value>
+                            <Style><FontSize>11pt</FontSize><Color>=Code.MonthColor(Fields!June.Value, Fields!PrevJune.Value)</Color></Style>
+                          </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>=Code.RowBg(Fields!IsCurrentYear.Value)</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <!-- July -->
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dat_July">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun>
+                            <Value>=Code.MonthDisplay(Fields!July.Value)</Value>
+                            <Style><FontSize>11pt</FontSize><Color>=Code.MonthColor(Fields!July.Value, Fields!PrevJuly.Value)</Color></Style>
+                          </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>=Code.RowBg(Fields!IsCurrentYear.Value)</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <!-- Aug -->
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dat_Aug">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun>
+                            <Value>=Code.MonthDisplay(Fields!Aug.Value)</Value>
+                            <Style><FontSize>11pt</FontSize><Color>=Code.MonthColor(Fields!Aug.Value, Fields!PrevAug.Value)</Color></Style>
+                          </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>=Code.RowBg(Fields!IsCurrentYear.Value)</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <!-- Sep -->
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dat_Sep">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun>
+                            <Value>=Code.MonthDisplay(Fields!Sep.Value)</Value>
+                            <Style><FontSize>11pt</FontSize><Color>=Code.MonthColor(Fields!Sep.Value, Fields!PrevSep.Value)</Color></Style>
+                          </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>=Code.RowBg(Fields!IsCurrentYear.Value)</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <!-- Oct -->
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dat_Oct">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun>
+                            <Value>=Code.MonthDisplay(Fields!Oct.Value)</Value>
+                            <Style><FontSize>11pt</FontSize><Color>=Code.MonthColor(Fields!Oct.Value, Fields!PrevOct.Value)</Color></Style>
+                          </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>=Code.RowBg(Fields!IsCurrentYear.Value)</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <!-- Nov -->
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dat_Nov">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun>
+                            <Value>=Code.MonthDisplay(Fields!Nov.Value)</Value>
+                            <Style><FontSize>11pt</FontSize><Color>=Code.MonthColor(Fields!Nov.Value, Fields!PrevNov.Value)</Color></Style>
+                          </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>=Code.RowBg(Fields!IsCurrentYear.Value)</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <!-- Dec -->
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dat_Dec">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun>
+                            <Value>=Code.MonthDisplay(Fields!Dec.Value)</Value>
+                            <Style><FontSize>11pt</FontSize><Color>=Code.MonthColor(Fields!Dec.Value, Fields!PrevDec.Value)</Color></Style>
+                          </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>=Code.RowBg(Fields!IsCurrentYear.Value)</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <!-- Total -->
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dat_Total">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun>
+                            <Value>=IIf(Fields!TotalSales.Value = 0, "", Format(Fields!TotalSales.Value, "#,0"))</Value>
+                            <Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight></Style>
+                          </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>=Code.RowBg(Fields!IsCurrentYear.Value)</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <!-- YoY -->
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dat_YoY">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun>
+                            <Value>=IIf(IsNothing(Fields!YoY.Value), "", Format(Fields!YoY.Value, "0.000"))</Value>
+                            <Style><FontSize>11pt</FontSize></Style>
+                          </TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>=Code.YoYBg(Fields!YoY.Value)</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <!-- MoM -->
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dat_MoM">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun>
+                            <Value>=IIf(IsNothing(Fields!MoM.Value), "", Format(Fields!MoM.Value, "0.000"))</Value>
+                            <Style><FontSize>11pt</FontSize></Style>
+                          </TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>=Code.YoYBg(Fields!MoM.Value)</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <!-- EstSales -->
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dat_EstSales">
+                          <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                          <Paragraphs><Paragraph><TextRuns><TextRun>
+                            <Value>=IIf(Fields!EstSales.Value = 0, "", Format(Fields!EstSales.Value, "#,0"))</Value>
+                            <Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight></Style>
+                          </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                          <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>=IIf(Fields!EstSales.Value &gt; 0, "#FDEBD0", Code.RowBg(Fields!IsCurrentYear.Value))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>4pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember /><TablixMember /><TablixMember /><TablixMember />
+                <TablixMember /><TablixMember /><TablixMember /><TablixMember />
+                <TablixMember /><TablixMember /><TablixMember /><TablixMember />
+                <TablixMember /><TablixMember /><TablixMember /><TablixMember />
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                  <RepeatOnNewPage>true</RepeatOnNewPage>
+                  <KeepTogether>true</KeepTogether>
+                </TablixMember>
+                <TablixMember>
+                  <Group Name="MonthlySalesTable_Details_Group">
+                    <DataElementName>Detail</DataElementName>
+                  </Group>
+                  <TablixMembers>
+                    <TablixMember />
+                  </TablixMembers>
+                  <DataElementName>Detail_Collection</DataElementName>
+                  <DataElementOutput>Output</DataElementOutput>
+                  <KeepTogether>true</KeepTogether>
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <DataSetName>MonthlySalesData</DataSetName>
+            <Top>0.6in</Top>
+            <Height>0.6in</Height>
+            <Width>14.85in</Width>
+            <ZIndex>1</ZIndex>
+            <Style />
+          </Tablix>
+        </ReportItems>
+        <Height>3in</Height>
+        <Style />
+      </Body>
+      <Width>15.85in</Width>
+      <Page>
+        <LeftMargin>0.5in</LeftMargin>
+        <RightMargin>0.5in</RightMargin>
+        <TopMargin>0.5in</TopMargin>
+        <BottomMargin>0.5in</BottomMargin>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <Code>
+Public Function MonthDisplay(val As Decimal) As String
+    If val = 0 Then
+        Return ""
+    Else
+        Return Format(val, "#,0")
+    End If
+End Function
+
+Public Function MonthColor(currentVal As Decimal, prevVal As Decimal) As String
+    If currentVal &gt; 0 And prevVal &gt; 0 And currentVal &lt; prevVal Then
+        Return "Red"
+    Else
+        Return "Black"
+    End If
+End Function
+
+Public Function RowBg(isCurrentYear As Integer) As String
+    If isCurrentYear = 1 Then
+        Return "#D6EAF8"
+    Else
+        Return "White"
+    End If
+End Function
+
+Public Function YoYBg(yoy As Object) As String
+    If IsNothing(yoy) Then
+        Return "White"
+    ElseIf CDec(yoy) &gt;= 1.0D Then
+        Return "#FFFACD"
+    Else
+        Return "White"
+    End If
+End Function
+  </Code>
+  <Language>zh-TW</Language>
+  <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+  <rd:ReportID>b8c4d3e5-f7a8-4b9c-ad1e-2f3b4c5d6e7f</rd:ReportID>
+</Report>
