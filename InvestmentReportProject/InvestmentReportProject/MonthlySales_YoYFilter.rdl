@@ -23,7 +23,22 @@
     <DataSet Name="IndustryNamesList">
       <Query>
         <DataSourceName>DataSource_localhost</DataSourceName>
-        <CommandText>SELECT DISTINCT IndustryName FROM IndustryIndex ORDER BY IndustryName</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@Industry">
+            <Value>=Parameters!Industry.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>
+SELECT DISTINCT ii.IndustryName
+FROM IndustryIndex ii
+WHERE EXISTS (
+    SELECT 1 FROM CompanyDetailedIndustry cdi
+    JOIN Company c ON cdi.CompanyID = c.CompanyID
+    WHERE c.Industry IN (@Industry)
+    AND cdi.IndustryNames LIKE '%' + ii.IndustryName + '%'
+)
+ORDER BY ii.IndustryName
+        </CommandText>
       </Query>
       <Fields>
         <Field Name="IndustryName"><DataField>IndustryName</DataField><rd:TypeName>System.String</rd:TypeName></Field>
@@ -245,7 +260,7 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
                 <TablixColumn><Width>0.48in</Width></TablixColumn>
                 <TablixColumn><Width>0.85in</Width></TablixColumn>
                 <TablixColumn><Width>0.90in</Width></TablixColumn>
-                <TablixColumn><Width>1.10in</Width></TablixColumn>
+                <TablixColumn><Width>1.60in</Width></TablixColumn>
                 <TablixColumn><Width>0.90in</Width></TablixColumn>
                 <TablixColumn><Width>0.60in</Width></TablixColumn>
                 <TablixColumn><Width>0.90in</Width></TablixColumn>
@@ -469,7 +484,7 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
             <DataSetName>ScreeningData</DataSetName>
             <Top>0.6in</Top>
             <Height>0.6in</Height>
-            <Width>10.19in</Width>
+            <Width>10.69in</Width>
             <ZIndex>1</ZIndex>
             <Style />
           </Tablix>
@@ -477,7 +492,7 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
         <Height>3in</Height>
         <Style />
       </Body>
-      <Width>11.19in</Width>
+      <Width>11.69in</Width>
       <Page>
         <LeftMargin>0.5in</LeftMargin>
         <RightMargin>0.5in</RightMargin>
