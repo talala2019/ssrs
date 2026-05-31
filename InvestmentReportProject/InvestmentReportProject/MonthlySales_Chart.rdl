@@ -722,31 +722,31 @@ ORDER BY ms.Year, v.MonthNum
                   <Type>Line</Type>
                 </ChartSeries>
               </ChartSeriesCollection>
-              <ChartCategoryHierarchy>
-                <ChartMembers>
-                  <ChartMember>
-                    <Group Name="CategoryGroup">
-                      <GroupExpressions>
-                        <GroupExpression>=Fields!MonthNum.Value</GroupExpression>
-                      </GroupExpressions>
-                    </Group>
-                    <Label>=Fields!MonthName.Value</Label>
-                  </ChartMember>
-                </ChartMembers>
-              </ChartCategoryHierarchy>
-              <ChartSeriesHierarchy>
-                <ChartMembers>
-                  <ChartMember>
-                    <Group Name="SeriesGroup">
-                      <GroupExpressions>
-                        <GroupExpression>=Fields!Year.Value</GroupExpression>
-                      </GroupExpressions>
-                    </Group>
-                    <Label>=CStr(Fields!Year.Value)</Label>
-                  </ChartMember>
-                </ChartMembers>
-              </ChartSeriesHierarchy>
             </ChartData>
+            <ChartCategoryHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Group Name="CategoryGroup">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!MonthNum.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <Label>=Fields!MonthName.Value</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartCategoryHierarchy>
+            <ChartSeriesHierarchy>
+              <ChartMembers>
+                <ChartMember>
+                  <Group Name="SeriesGroup">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!Year.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <Label>=CStr(Fields!Year.Value)</Label>
+                </ChartMember>
+              </ChartMembers>
+            </ChartSeriesHierarchy>
             <ChartAreas>
               <ChartArea Name="Default">
                 <ChartPlotAreas>
