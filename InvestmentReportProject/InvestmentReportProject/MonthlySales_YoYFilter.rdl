@@ -184,13 +184,13 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
     <ReportParameter Name="Industry">
       <DataType>String</DataType>
       <MultiValue>true</MultiValue>
-      <AvailableValues>
+      <ValidValues>
         <DataSetReference>
           <DataSetName>IndustryList</DataSetName>
           <ValueField>Industry</ValueField>
           <LabelField>Industry</LabelField>
         </DataSetReference>
-      </AvailableValues>
+      </ValidValues>
       <DefaultValue>
         <Values>
           <Value>半導體</Value>
@@ -201,13 +201,13 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
     <ReportParameter Name="IndustryNames">
       <DataType>String</DataType>
       <MultiValue>true</MultiValue>
-      <AvailableValues>
+      <ValidValues>
         <DataSetReference>
           <DataSetName>IndustryNamesList</DataSetName>
           <ValueField>IndustryName</ValueField>
           <LabelField>IndustryName</LabelField>
         </DataSetReference>
-      </AvailableValues>
+      </ValidValues>
       <DefaultValue>
         <DataSetReference>
           <DataSetName>IndustryNamesList</DataSetName>
