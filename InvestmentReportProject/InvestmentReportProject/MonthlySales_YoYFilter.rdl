@@ -263,10 +263,10 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
           <Tablix Name="ScreeningTable">
             <TablixBody>
               <TablixColumns>
-                <TablixColumn><Width>0.48in</Width></TablixColumn>
-                <TablixColumn><Width>0.85in</Width></TablixColumn>
+                <TablixColumn><Width>0.65in</Width></TablixColumn>
+                <TablixColumn><Width>1.30in</Width></TablixColumn>
                 <TablixColumn><Width>0.90in</Width></TablixColumn>
-                <TablixColumn><Width>1.60in</Width></TablixColumn>
+                <TablixColumn><Width>2.20in</Width></TablixColumn>
                 <TablixColumn><Width>0.90in</Width></TablixColumn>
                 <TablixColumn><Width>0.60in</Width></TablixColumn>
                 <TablixColumn><Width>0.90in</Width></TablixColumn>
@@ -283,62 +283,63 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
                   <TablixCells>
                     <TablixCell><CellContents><Textbox Name="h_Code">
                       <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
-                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>Code</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+                      <UserSort><SortExpression>=Fields!Code.Value</SortExpression></UserSort>
+                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>Code</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
                     <TablixCell><CellContents><Textbox Name="h_Name">
                       <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
-                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>公司</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>公司</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
                     <TablixCell><CellContents><Textbox Name="h_Industry">
                       <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
-                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>產業</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>產業</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
                     <TablixCell><CellContents><Textbox Name="h_IndustryNames">
                       <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
-                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>細產業</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>細產業</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
                     <TablixCell><CellContents><Textbox Name="h_M3Val">
                       <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
-                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>=First(Fields!M3Label.Value, "ScreeningData")</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>=First(Fields!M3Label.Value, "ScreeningData")</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>6pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
                     <TablixCell><CellContents><Textbox Name="h_M3YoY">
                       <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
-                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>YoY</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>YoY</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>6pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
                     <TablixCell><CellContents><Textbox Name="h_M2Val">
                       <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
-                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>=First(Fields!M2Label.Value, "ScreeningData")</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>=First(Fields!M2Label.Value, "ScreeningData")</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>6pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
                     <TablixCell><CellContents><Textbox Name="h_M2YoY">
                       <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
-                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>YoY</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>YoY</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>6pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
                     <TablixCell><CellContents><Textbox Name="h_M1Val">
                       <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
-                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>=First(Fields!M1Label.Value, "ScreeningData")</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>=First(Fields!M1Label.Value, "ScreeningData")</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>6pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
                     <TablixCell><CellContents><Textbox Name="h_M1YoY">
                       <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
-                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>YoY</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>YoY</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>6pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
                     <TablixCell><CellContents><Textbox Name="h_YTDVal">
                       <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
-                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>YTD累計</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>YTD累計</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>6pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
                     <TablixCell><CellContents><Textbox Name="h_YTDYoY">
                       <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
-                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>YTD YoY</Value><Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                      <Paragraphs><Paragraph><TextRuns><TextRun><Value>YTD YoY</Value><Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>#333333</Color></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>#E8E8E8</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>6pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
                   </TablixCells>
@@ -349,10 +350,10 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
                   <TablixCells>
                     <!-- Code -->
                     <TablixCell><CellContents><Textbox Name="d_Code">
-                      <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                      <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
                       <Paragraphs><Paragraph><TextRuns><TextRun>
                         <Value>=Fields!Code.Value</Value>
-                        <Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight><Color>DarkBlue</Color></Style>
+                        <Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight><Color>DarkBlue</Color></Style>
                       </TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
                       <ActionInfo><Actions><Action>
                         <Hyperlink>="javascript:void(window.open('http://localhost/InvestmentReports/report/InvestmentReportProject/MonthlySales?symbol=" &amp; Fields!Code.Value &amp; "&amp;rc:Zoom=100','_blank'))"</Hyperlink>
@@ -361,28 +362,28 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
                     </Textbox></CellContents></TablixCell>
                     <!-- ChtName -->
                     <TablixCell><CellContents><Textbox Name="d_Name">
-                      <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                      <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
                       <Paragraphs><Paragraph><TextRuns><TextRun>
                         <Value>=Fields!ChtName.Value</Value>
-                        <Style><FontSize>11pt</FontSize></Style>
+                        <Style><FontSize>12pt</FontSize></Style>
                       </TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
                     <!-- Industry -->
                     <TablixCell><CellContents><Textbox Name="d_Industry">
-                      <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                      <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
                       <Paragraphs><Paragraph><TextRuns><TextRun>
                         <Value>=Fields!Industry.Value</Value>
-                        <Style><FontSize>10pt</FontSize><Color>#555555</Color></Style>
+                        <Style><FontSize>12pt</FontSize><Color>#555555</Color></Style>
                       </TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
                     <!-- IndustryNames -->
                     <TablixCell><CellContents><Textbox Name="d_IndustryNames">
-                      <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+                      <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
                       <Paragraphs><Paragraph><TextRuns><TextRun>
                         <Value>=Fields!IndustryNames.Value</Value>
-                        <Style><FontSize>10pt</FontSize><Color>#555555</Color></Style>
+                        <Style><FontSize>12pt</FontSize><Color>#555555</Color></Style>
                       </TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>4pt</PaddingLeft><PaddingRight>2pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
@@ -391,7 +392,7 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
                       <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
                       <Paragraphs><Paragraph><TextRuns><TextRun>
                         <Value>=Format(Fields!M3_Val.Value, "#,0")</Value>
-                        <Style><FontSize>11pt</FontSize></Style>
+                        <Style><FontSize>12pt</FontSize></Style>
                       </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>6pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
@@ -400,7 +401,7 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
                       <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
                       <Paragraphs><Paragraph><TextRuns><TextRun>
                         <Value>=Format(Fields!M3_YoY.Value, "0.0")</Value>
-                        <Style><FontSize>11pt</FontSize><FontWeight>=Code.YoYWeight(Fields!M3_YoY.Value)</FontWeight><Color>=Code.YoYColor(Fields!M3_YoY.Value)</Color></Style>
+                        <Style><FontSize>12pt</FontSize><FontWeight>=Code.YoYWeight(Fields!M3_YoY.Value)</FontWeight><Color>=Code.YoYColor(Fields!M3_YoY.Value)</Color></Style>
                       </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>=Code.YoYBg(Fields!M3_YoY.Value)</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>6pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
@@ -409,7 +410,7 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
                       <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
                       <Paragraphs><Paragraph><TextRuns><TextRun>
                         <Value>=Format(Fields!M2_Val.Value, "#,0")</Value>
-                        <Style><FontSize>11pt</FontSize></Style>
+                        <Style><FontSize>12pt</FontSize></Style>
                       </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>6pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
@@ -418,7 +419,7 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
                       <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
                       <Paragraphs><Paragraph><TextRuns><TextRun>
                         <Value>=Format(Fields!M2_YoY.Value, "0.0")</Value>
-                        <Style><FontSize>11pt</FontSize><FontWeight>=Code.YoYWeight(Fields!M2_YoY.Value)</FontWeight><Color>=Code.YoYColor(Fields!M2_YoY.Value)</Color></Style>
+                        <Style><FontSize>12pt</FontSize><FontWeight>=Code.YoYWeight(Fields!M2_YoY.Value)</FontWeight><Color>=Code.YoYColor(Fields!M2_YoY.Value)</Color></Style>
                       </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>=Code.YoYBg(Fields!M2_YoY.Value)</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>6pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
@@ -427,7 +428,7 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
                       <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
                       <Paragraphs><Paragraph><TextRuns><TextRun>
                         <Value>=Format(Fields!M1_Val.Value, "#,0")</Value>
-                        <Style><FontSize>11pt</FontSize></Style>
+                        <Style><FontSize>12pt</FontSize></Style>
                       </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>6pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
@@ -436,7 +437,7 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
                       <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
                       <Paragraphs><Paragraph><TextRuns><TextRun>
                         <Value>=Format(Fields!M1_YoY.Value, "0.0")</Value>
-                        <Style><FontSize>11pt</FontSize><FontWeight>=Code.YoYWeight(Fields!M1_YoY.Value)</FontWeight><Color>=Code.YoYColor(Fields!M1_YoY.Value)</Color></Style>
+                        <Style><FontSize>12pt</FontSize><FontWeight>=Code.YoYWeight(Fields!M1_YoY.Value)</FontWeight><Color>=Code.YoYColor(Fields!M1_YoY.Value)</Color></Style>
                       </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>=Code.YoYBg(Fields!M1_YoY.Value)</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>6pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
@@ -445,7 +446,7 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
                       <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
                       <Paragraphs><Paragraph><TextRuns><TextRun>
                         <Value>=Format(Fields!YTD_Val.Value, "#,0")</Value>
-                        <Style><FontSize>11pt</FontSize><FontWeight>Bold</FontWeight></Style>
+                        <Style><FontSize>12pt</FontSize><FontWeight>Bold</FontWeight></Style>
                       </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>6pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
@@ -454,7 +455,7 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
                       <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
                       <Paragraphs><Paragraph><TextRuns><TextRun>
                         <Value>=Format(Fields!YTD_YoY.Value, "0.0")</Value>
-                        <Style><FontSize>11pt</FontSize><FontWeight>=Code.YoYWeight(Fields!YTD_YoY.Value)</FontWeight><Color>=Code.YoYColor(Fields!YTD_YoY.Value)</Color></Style>
+                        <Style><FontSize>12pt</FontSize><FontWeight>=Code.YoYWeight(Fields!YTD_YoY.Value)</FontWeight><Color>=Code.YoYColor(Fields!YTD_YoY.Value)</Color></Style>
                       </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
                       <Style><Border><Color>LightGrey</Color><Style>Solid</Style></Border><BackgroundColor>=Code.YoYBg(Fields!YTD_YoY.Value)</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>2pt</PaddingLeft><PaddingRight>6pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
                     </Textbox></CellContents></TablixCell>
@@ -490,7 +491,7 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
             <DataSetName>ScreeningData</DataSetName>
             <Top>0.6in</Top>
             <Height>0.6in</Height>
-            <Width>10.69in</Width>
+            <Width>11.91in</Width>
             <ZIndex>1</ZIndex>
             <Style />
           </Tablix>
@@ -498,7 +499,7 @@ ORDER BY ytd.CurYTD / ytd.PrevYTD DESC
         <Height>3in</Height>
         <Style />
       </Body>
-      <Width>11.69in</Width>
+      <Width>12.91in</Width>
       <Page>
         <LeftMargin>0.5in</LeftMargin>
         <RightMargin>0.5in</RightMargin>
