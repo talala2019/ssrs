@@ -164,13 +164,10 @@ JOIN YTD ytd ON c.CompanyId = ytd.CompanyId
 LEFT JOIN CompanyDetailedIndustry cdi ON c.CompanyID = cdi.CompanyID
 WHERE c.Status = 1 AND c.CountryCode = 'TW'
   AND c.Industry IN (@Industry)
-  AND (
-      cdi.CompanyID IS NULL
-      OR EXISTS (
-          SELECT 1 FROM IndustryIndex ii
-          WHERE ii.IndustryName IN (@IndustryNames)
-          AND cdi.IndustryNames LIKE '%' + ii.IndustryName + '%'
-      )
+  AND EXISTS (
+      SELECT 1 FROM IndustryIndex ii
+      WHERE ii.IndustryName IN (@IndustryNames)
+      AND cdi.IndustryNames LIKE '%' + ii.IndustryName + '%'
   )
   AND (ISNULL(@symbol, '') = '' OR LEFT(c.Symbol, 4) = LEFT(LTRIM(RTRIM(@symbol)), 4))
   AND m1.amt &gt; 0
