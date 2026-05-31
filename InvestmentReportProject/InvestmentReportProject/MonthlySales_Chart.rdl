@@ -761,12 +761,11 @@ ORDER BY ms.Year, v.MonthNum
                 </ChartCategoryAxes>
                 <ChartValueAxes>
                   <ChartAxis Name="Primary">
-                    <Style><FontSize>9pt</FontSize></Style>
+                    <Style><FontSize>9pt</FontSize><Format>#,#0</Format></Style>
                     <ChartAxisTitle>
                       <Caption>營收（千元）</Caption>
                       <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight></Style>
                     </ChartAxisTitle>
-                    <LabelFormat>#,#0</LabelFormat>
                     <ChartMajorGridLines>
                       <Style>
                         <BorderStyle>Dashed</BorderStyle>
