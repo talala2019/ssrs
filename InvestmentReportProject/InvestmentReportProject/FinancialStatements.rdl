@@ -1,0 +1,724 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report MustUnderstand="df" xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner" xmlns:df="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition/defaultfontfamily">
+  <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
+  <AutoRefresh>0</AutoRefresh>
+
+  <DataSources>
+    <DataSource Name="DataSource_localhost">
+      <DataSourceReference>DataSource_localhost</DataSourceReference>
+      <rd:SecurityType>None</rd:SecurityType>
+      <rd:DataSourceID>56cd27f5-46d2-4105-a744-8706f1cbd54f</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+
+  <DataSets>
+    <DataSet Name="FinancialData">
+      <Query>
+        <DataSourceName>DataSource_localhost</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@symbol">
+            <Value>=Parameters!symbol.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>EXEC sp_FinancialStatements @symbol</CommandText>
+      </Query>
+      <Fields>
+          <Field Name="Year"><DataField>Year</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="Quarter"><DataField>Quarter</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="Type"><DataField>Type</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="ChtName"><DataField>ChtName</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="RoA"><DataField>RoA</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="RoE"><DataField>RoE</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="IRR"><DataField>IRR</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="ICF"><DataField>ICF</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="Debt"><DataField>Debt</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="RDebt"><DataField>RDebt</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="CR"><DataField>CR</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="Sales"><DataField>Sales</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="SalesYoY"><DataField>SalesYoY</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="NetIncome"><DataField>NetIncome</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="NIYoY"><DataField>NIYoY</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="PM"><DataField>PM</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="GPM"><DataField>GPM</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="NOI"><DataField>NOI</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="EBT_Margin"><DataField>EBT_Margin</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="NPM"><DataField>NPM</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="EPS"><DataField>EPS</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="CashDiv"><DataField>CashDiv</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="Div"><DataField>Div</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="Yld"><DataField>Yld</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="BVPS"><DataField>BVPS</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="Inv"><DataField>Inv</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="Inv_T"><DataField>Inv_T</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="ArR"><DataField>ArR</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="Equity"><DataField>Equity</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="PE_L"><DataField>PE_L</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="PE_H"><DataField>PE_H</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="P_L"><DataField>P_L</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="P_H"><DataField>P_H</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+          <Field Name="IsLatestRow"><DataField>IsLatestRow</DataField><rd:TypeName>System.Object</rd:TypeName></Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+
+  <ReportParameters>
+    <ReportParameter Name="symbol">
+      <DataType>String</DataType>
+      <Prompt>Symbol (e.g. 2317 or 2317.TW)</Prompt>
+    </ReportParameter>
+  </ReportParameters>
+
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+
+          <Textbox Name="ReportTitle">
+            <CanGrow>true</CanGrow><KeepTogether>true</KeepTogether>
+            <Paragraphs><Paragraph><TextRuns><TextRun>
+              <Value>=First(Fields!ChtName.Value,"FinancialData") &amp; "  " &amp; Parameters!symbol.Value &amp; "  Financial Statements"</Value>
+              <Style><FontSize>14pt</FontSize><FontWeight>Bold</FontWeight></Style>
+            </TextRun></TextRuns></Paragraph></Paragraphs>
+            <rd:DefaultName>ReportTitle</rd:DefaultName>
+            <Top>0in</Top><Left>0in</Left>
+            <Height>0.4in</Height><Width>17.02in</Width>
+            <Style><PaddingLeft>4pt</PaddingLeft><PaddingBottom>4pt</PaddingBottom></Style>
+          </Textbox>
+
+          <Tablix Name="FinTable">
+            <TablixBody>
+              <TablixColumns>
+            <TablixColumn><Width>0.42in</Width></TablixColumn>
+            <TablixColumn><Width>0.30in</Width></TablixColumn>
+            <TablixColumn><Width>0.49in</Width></TablixColumn>
+            <TablixColumn><Width>0.49in</Width></TablixColumn>
+            <TablixColumn><Width>0.52in</Width></TablixColumn>
+            <TablixColumn><Width>0.52in</Width></TablixColumn>
+            <TablixColumn><Width>0.52in</Width></TablixColumn>
+            <TablixColumn><Width>0.52in</Width></TablixColumn>
+            <TablixColumn><Width>0.49in</Width></TablixColumn>
+            <TablixColumn><Width>1.08in</Width></TablixColumn>
+            <TablixColumn><Width>0.49in</Width></TablixColumn>
+            <TablixColumn><Width>0.90in</Width></TablixColumn>
+            <TablixColumn><Width>0.49in</Width></TablixColumn>
+            <TablixColumn><Width>0.49in</Width></TablixColumn>
+            <TablixColumn><Width>0.49in</Width></TablixColumn>
+            <TablixColumn><Width>0.49in</Width></TablixColumn>
+            <TablixColumn><Width>0.49in</Width></TablixColumn>
+            <TablixColumn><Width>0.49in</Width></TablixColumn>
+            <TablixColumn><Width>0.57in</Width></TablixColumn>
+            <TablixColumn><Width>0.60in</Width></TablixColumn>
+            <TablixColumn><Width>0.52in</Width></TablixColumn>
+            <TablixColumn><Width>0.49in</Width></TablixColumn>
+            <TablixColumn><Width>0.57in</Width></TablixColumn>
+            <TablixColumn><Width>0.52in</Width></TablixColumn>
+            <TablixColumn><Width>0.49in</Width></TablixColumn>
+            <TablixColumn><Width>0.52in</Width></TablixColumn>
+            <TablixColumn><Width>0.93in</Width></TablixColumn>
+            <TablixColumn><Width>0.49in</Width></TablixColumn>
+            <TablixColumn><Width>0.49in</Width></TablixColumn>
+            <TablixColumn><Width>0.52in</Width></TablixColumn>
+            <TablixColumn><Width>0.52in</Width></TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+          <TablixRow>
+            <Height>0.28in</Height>
+            <TablixCells>
+              <TablixCell><CellContents><Textbox Name="h0">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>Year</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h1">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>Q</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h2">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>RoA</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h3">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>RoE</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h4">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>IRR</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h5">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>ICF</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h6">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>Debt</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h7">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>RDebt</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h8">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>CR</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h9">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>Sales</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h10">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>YoY</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h11">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>NetIncome</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h12">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>YoY</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h13">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>PM</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h14">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>GPM</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h15">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>NOI</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h16">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>EBT</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h17">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>NPM</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h18">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>EPS</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h19">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>CashDiv</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h20">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>Div%</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h21">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>Yld%</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h22">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>BVPS</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h23">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>Inv</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h24">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>Inv_T</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h25">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>ArR</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h26">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>Equity</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h27">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>PE_L</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h28">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>PE_H</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h29">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>P_L</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="h30">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>P_H</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight><Color>White</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>#404040</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+            </TablixCells>
+          </TablixRow>
+          <TablixRow>
+            <Height>0.24in</Height>
+            <TablixCells>
+              <TablixCell><CellContents><Textbox Name="d0">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!Year.Value),"",CStr(CInt(Fields!Year.Value)))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d1">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!Quarter.Value),"",CStr(CInt(Fields!Quarter.Value)))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d2">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!RoA.Value),"",Format(CDbl(Fields!RoA.Value),"0.0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d3">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!RoE.Value),"",Format(CDbl(Fields!RoE.Value),"0.0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d4">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!IRR.Value),"",Format(CDbl(Fields!IRR.Value),"0.0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d5">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!ICF.Value),"",Format(CDbl(Fields!ICF.Value),"0.0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d6">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!Debt.Value),"",Format(CDbl(Fields!Debt.Value),"0.0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d7">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!RDebt.Value),"",Format(CDbl(Fields!RDebt.Value),"0.0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d8">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!CR.Value),"",Format(CDbl(Fields!CR.Value),"0.00"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d9">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!Sales.Value),"",Format(CDbl(Fields!Sales.Value),"#,##0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d10">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!SalesYoY.Value),"",Format(CDbl(Fields!SalesYoY.Value),"0.00"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White",IIF(IsNothing(Fields!SalesYoY.Value),"Black",IIF(CDbl(Fields!SalesYoY.Value)&gt;=1,"DarkGreen","Red")))</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d11">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!NetIncome.Value),"",Format(CDbl(Fields!NetIncome.Value),"#,##0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d12">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!NIYoY.Value),"",Format(CDbl(Fields!NIYoY.Value),"0.00"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White",IIF(IsNothing(Fields!NIYoY.Value),"Black",IIF(CDbl(Fields!NIYoY.Value)&gt;=1,"DarkGreen","Red")))</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d13">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!PM.Value),"",Format(CDbl(Fields!PM.Value),"0.0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d14">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!GPM.Value),"",Format(CDbl(Fields!GPM.Value),"0.0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d15">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!NOI.Value),"",Format(CDbl(Fields!NOI.Value),"0.0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d16">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!EBT_Margin.Value),"",Format(CDbl(Fields!EBT_Margin.Value),"0.0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d17">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!NPM.Value),"",Format(CDbl(Fields!NPM.Value),"0.0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d18">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!EPS.Value),"",Format(CDbl(Fields!EPS.Value),"0.00"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d19">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!CashDiv.Value),"",Format(CDbl(Fields!CashDiv.Value),"0.00"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d20">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!Div.Value),"",Format(CDbl(Fields!Div.Value),"0.0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d21">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!Yld.Value),"",Format(CDbl(Fields!Yld.Value),"0.00"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d22">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!BVPS.Value),"",Format(CDbl(Fields!BVPS.Value),"0.0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d23">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!Inv.Value),"",Format(CDbl(Fields!Inv.Value),"0.0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d24">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!Inv_T.Value),"",Format(CDbl(Fields!Inv_T.Value),"0.0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d25">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!ArR.Value),"",Format(CDbl(Fields!ArR.Value),"0.0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d26">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!Equity.Value),"",Format(CDbl(Fields!Equity.Value),"#,##0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d27">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!PE_L.Value),"",Format(CDbl(Fields!PE_L.Value),"0.0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d28">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!PE_H.Value),"",Format(CDbl(Fields!PE_H.Value),"0.0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d29">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!P_L.Value),"",Format(CDbl(Fields!P_L.Value),"0.0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+              <TablixCell><CellContents><Textbox Name="d30">
+                <CanGrow>false</CanGrow><KeepTogether>true</KeepTogether>
+                <Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!P_H.Value),"",Format(CDbl(Fields!P_H.Value),"0.0"))</Value>
+                  <Style><FontSize>10pt</FontSize><FontWeight>=IIF(Fields!IsLatestRow.Value=1,"Bold",IIF(Fields!Quarter.Value=0,"Bold","Normal"))</FontWeight><Color>=IIF(Fields!IsLatestRow.Value=1,"White","Black")</Color></Style>
+                </TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs>
+                <Style><Border><Color>#888888</Color><Style>Solid</Style></Border>
+                <BackgroundColor>=IIF(Fields!IsLatestRow.Value=1,"#FF9900",IIF(Fields!Quarter.Value=0,"#C6D9F1","White"))</BackgroundColor><VerticalAlign>Middle</VerticalAlign><PaddingLeft>3pt</PaddingLeft><PaddingRight>3pt</PaddingRight><PaddingTop>2pt</PaddingTop><PaddingBottom>2pt</PaddingBottom></Style>
+              </Textbox></CellContents></TablixCell>
+            </TablixCells>
+          </TablixRow>
+              </TablixRows>
+            </TablixBody>
+
+            <TablixColumnHierarchy>
+          <TablixMembers>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+            <TablixMember/>
+          </TablixMembers>
+            </TablixColumnHierarchy>
+
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                  <RepeatOnNewPage>true</RepeatOnNewPage>
+                  <KeepTogether>true</KeepTogether>
+                </TablixMember>
+                <TablixMember>
+                  <Group Name="FinTable_Details"/>
+                  <TablixMembers>
+                    <TablixMember/>
+                  </TablixMembers>
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+
+            <DataSetName>FinancialData</DataSetName>
+            <Top>0.45in</Top><Left>0in</Left>
+            <Height>0.4in</Height><Width>17.02in</Width>
+            <Style/>
+          </Tablix>
+
+        </ReportItems>
+        <Height>6in</Height>
+        <Style/>
+      </Body>
+      <Width>17.02in</Width>
+      <Page>
+        <PageWidth>17.52in</PageWidth>
+        <PageHeight>8.5in</PageHeight>
+        <TopMargin>0.25in</TopMargin>
+        <BottomMargin>0.25in</BottomMargin>
+        <LeftMargin>0.25in</LeftMargin>
+        <RightMargin>0.25in</RightMargin>
+      </Page>
+    </ReportSection>
+  </ReportSections>
+
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>1</NumberOfColumns>
+      <NumberOfRows>1</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>symbol</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
+  <Language>zh-TW</Language>
+  <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+  <rd:ReportID>a1b2c3d4-e5f6-7890-abcd-ef1234567890</rd:ReportID>
+</Report>

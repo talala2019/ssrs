@@ -70,6 +70,7 @@
     <Report Include="MarketData.rdl" />
     <Report Include="MonthlySales.rdl" />
     <Report Include="MonthlySales_YoYFilter.rdl" />
+    <Report Include="FinancialStatements.rdl" />
     <Report Include="MatchOnBidOrAsk.rdl" />
     <Report Include="MatchOnBidOrAsk_V2.rdl" />
     <Report Include="QuoteSummary.rdl" />

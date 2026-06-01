@@ -18,3 +18,17 @@ InvestmentReportProject/InvestmentReportProject/bin/
 # Windows
 Thumbs.db
 Desktop.ini
+
+# Scripts: temp / debug artifacts
+scripts/__pycache__/
+scripts/*.html
+scripts/probe*.py
+scripts/find_*.py
+scripts/capture_api.py
+scripts/inspect_form*.py
+
+# Temp data files
+*.json
+
+# Claude internal
+.claude/
